@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="$(Configuration.Contains('Windows'))">
+        <MonoGamePlatform>Windows</MonoGamePlatform>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.9" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <MonoGameContentReference Include="**\*.mgcb" />
+        <None Update="Content\Maps\**\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\Tilesets\**\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
