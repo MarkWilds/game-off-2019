@@ -14,6 +14,8 @@ namespace game.Systems
         private readonly EntitySet cameraBuilder;
         private Entity camera;
         
+        private readonly int cellSize = 32;
+        
         public MapRendererSystem(SpriteBatch batch, 
             Texture2D blankTexture, World world)
         : base(world)
@@ -41,36 +43,14 @@ namespace game.Systems
             
             renderer.ClearDepthBuffer();
             renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.angle,
-                32, "walls1", cameraData.fov);
-
-//            RenderProps(spriteBatch);
+                cellSize, "walls1", cameraData.fov);
+            renderer.RenderProps(mapData, spriteBatch, cellSize, cameraTransform.position, 
+                cameraTransform.angle, cameraData.fov);
         }
 
         protected override void PostUpdate(double state)
         {
             spriteBatch.End();
         }
-        
-//        private void RenderProps(SpriteBatch batch)
-//        {
-//            TmxLayer propsLayer = currentMap.Data.Layers["props"];
-//            List<TmxLayerTile> propTiles = propsLayer.Tiles.Where(t => t.Gid > 0).ToList();
-//
-//            foreach (TmxLayerTile propTile in propTiles)
-//            {
-//                TmxTileset tileset = currentMap.GetTilesetForTile(propTile);
-//                if (tileset == null)
-//                    continue;
-//
-//                int halfCellSize = cellSize / 2;
-//                Texture2D propTexture = currentMap.Textures[tileset];
-//                Vector2 spritePosition = new Vector2(propTile.X * cellSize + halfCellSize,
-//                    propTile.Y * cellSize + halfCellSize);
-//                Rectangle source = currentMap.GetSourceRectangleForTile(tileset, propTile);
-//
-//                renderer.RenderSprite(batch, spritePosition, propTexture, source,
-//                    position, angle);
-//            }
-//        }
     }
 }

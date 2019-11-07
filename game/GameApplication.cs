@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;

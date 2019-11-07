@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using game.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
-using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace game
 {
@@ -25,6 +26,94 @@ namespace game
             for (int i = 0; i < zBuffer.Length; i++)
             {
                 zBuffer[i] = float.MaxValue;
+            }
+        }
+
+        /// <summarY>
+        /// Draws the map
+        /// </summarY>
+        /// <param name="map">The map to draw</param>
+        /// <param name="position">The position to draw from</param>
+        /// <param name="orientation">The rotation to draw from in degrees</param>
+        public void RenderMap(SpriteBatch spriteBatch, MapData map, Vector2 position, float orientation, int cellSize,
+            string wallsLayer, float cameraFov)
+        {
+            var fov = (float) (cameraFov * Math.PI / 180.0f);
+            
+            TmxMap mapData = map.Data;
+            int slices = viewport.Width;
+            float halfFov = fov / 2;
+            float focalLength = slices / 2 / (float) Math.Tan(halfFov);
+            float cameraAngle = orientation * (float) (Math.PI / 180.0f);
+
+            float sliceAngle = fov / slices;
+            float beginAngle = cameraAngle - halfFov;
+
+            // draw ceiling and floor
+            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, viewport.Width, viewport.Height / 2),
+                Color.FromNonPremultiplied(23, 14, 8, 255));
+            spriteBatch.Draw(blankTexture, new Rectangle(0, viewport.Height / 2, viewport.Width, viewport.Height / 2),
+                Color.DarkKhaki);
+
+            // draw all wallslices
+            for (int x = 0; x < slices; x++)
+            {
+                float angle = beginAngle + x * sliceAngle;
+
+                RayCaster.HitData castData;
+                if (!RayCaster.RayIntersectsGrid(position, angle, cellSize, out castData,
+                    GetIsTileOccupiedFunction(mapData, wallsLayer)))
+                    continue;
+
+                // get the texture slice
+                int tileIndex = (int) (castData.tileCoordinates.Y * mapData.Width + castData.tileCoordinates.X);
+                TmxLayer wallLayer = mapData.Layers[wallsLayer];
+                TmxLayerTile tile = wallLayer.Tiles[tileIndex];
+                TmxTileset tileset = GetTilesetForTile(mapData, tile);
+                if (tileset == null)
+                    continue;
+
+                // fix fisheye for distance and get slice height
+                float distance = (float) (castData.rayLength * Math.Cos(angle - cameraAngle));
+                int sliceHeight = (int) (cellSize * focalLength / distance);
+                zBuffer[x] = distance;
+
+                // get drawing rectangles
+                Rectangle wallRectangle = new Rectangle(x, viewport.Height / 2 - sliceHeight / 2, 1, sliceHeight);
+                Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
+
+                textureRectangle.X =
+                    (int) (textureRectangle.X + (textureRectangle.Width * castData.cellFraction) % cellSize);
+                textureRectangle.Width = 1;
+
+                // get texture tint
+                float dot = Vector2.Dot(castData.normal, Vector2.UnitY);
+                Color lightingTint = Math.Abs(dot) > 0.9f ? Color.Gray : Color.White;
+
+                spriteBatch.Draw(map.Textures[tileset], wallRectangle, textureRectangle, lightingTint);
+            }
+        }
+
+        public void RenderProps(MapData mapData, SpriteBatch batch, int cellSize, 
+            Vector2 position, float orientation, float fov)
+        {
+            TmxLayer propsLayer = mapData.Data.Layers["props"];
+            List<TmxLayerTile> propTiles = propsLayer.Tiles.Where(t => t.Gid > 0).ToList();
+
+            foreach (TmxLayerTile propTile in propTiles)
+            {
+                TmxTileset tileset = GetTilesetForTile(mapData.Data, propTile);
+                if (tileset == null)
+                    continue;
+
+                int halfCellSize = cellSize / 2;
+                Texture2D propTexture = mapData.Textures[tileset];
+                Vector2 spritePosition = new Vector2(propTile.X * cellSize + halfCellSize,
+                    propTile.Y * cellSize + halfCellSize);
+                Rectangle source = GetSourceRectangleForTile(tileset, propTile);
+
+                RenderSprite(batch, spritePosition, propTexture, source,
+                    position, orientation, fov);
             }
         }
 
@@ -96,72 +185,7 @@ namespace game
             }
         }
 
-        /// <summarY>
-        /// Draws the map
-        /// </summarY>
-        /// <param name="map">The map to draw</param>
-        /// <param name="camera">The position to draw from</param>
-        /// <param name="orientation">The rotation to draw from in degrees</param>
-        public void RenderMap(SpriteBatch spriteBatch, MapData map, Vector2 camera, float orientation, int cellSize,
-            string wallsLayer, float cameraFov)
-        {
-            var fov = (float) (cameraFov * Math.PI / 180.0f);
-            
-            TmxMap mapData = map.Data;
-            int slices = viewport.Width;
-            float halfFov = fov / 2;
-            float focalLength = slices / 2 / (float) Math.Tan(halfFov);
-            float cameraAngle = orientation * (float) (Math.PI / 180.0f);
-
-            float sliceAngle = fov / slices;
-            float beginAngle = cameraAngle - halfFov;
-
-            // draw ceiling and floor
-            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, viewport.Width, viewport.Height / 2),
-                Color.FromNonPremultiplied(23, 14, 8, 255));
-            spriteBatch.Draw(blankTexture, new Rectangle(0, viewport.Height / 2, viewport.Width, viewport.Height / 2),
-                Color.DarkKhaki);
-
-            // draw all wallslices
-            for (int x = 0; x < slices; x++)
-            {
-                float angle = beginAngle + x * sliceAngle;
-
-                RayCaster.HitData castData;
-                if (!RayCaster.RayIntersectsGrid(camera, angle, cellSize, out castData,
-                    GetIsTileOccupiedFunction(mapData, wallsLayer)))
-                    continue;
-
-                // get the texture slice
-                int tileIndex = (int) (castData.tileCoordinates.Y * mapData.Width + castData.tileCoordinates.X);
-                TmxLayer wallLayer = mapData.Layers[wallsLayer];
-                TmxLayerTile tile = wallLayer.Tiles[tileIndex];
-                TmxTileset tileset = GetTilesetForTile(mapData, tile);
-                if (tileset == null)
-                    continue;
-
-                // fix fisheye for distance and get slice height
-                float distance = (float) (castData.rayLength * Math.Cos(angle - cameraAngle));
-                int sliceHeight = (int) (cellSize * focalLength / distance);
-                zBuffer[x] = distance;
-
-                // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(x, viewport.Height / 2 - sliceHeight / 2, 1, sliceHeight);
-                Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
-
-                textureRectangle.X =
-                    (int) (textureRectangle.X + (textureRectangle.Width * castData.cellFraction) % cellSize);
-                textureRectangle.Width = 1;
-
-                // get texture tint
-                float dot = Vector2.Dot(castData.normal, Vector2.UnitY);
-                Color lightingTint = Math.Abs(dot) > 0.9f ? Color.Gray : Color.White;
-
-                spriteBatch.Draw(map.Textures[tileset], wallRectangle, textureRectangle, lightingTint);
-            }
-        }
-        
-        public Func<RayCaster.HitData, bool> GetIsTileOccupiedFunction(TmxMap data, string layerName)
+        private Func<RayCaster.HitData, bool> GetIsTileOccupiedFunction(TmxMap data, string layerName)
         {
             if (!data.Layers.Contains(layerName))
                 throw new ArgumentException($"{layerName} does not exist in this map");
