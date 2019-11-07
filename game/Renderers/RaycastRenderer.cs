@@ -99,14 +99,26 @@ namespace game
         {
             TmxLayer propsLayer = map.Data.Layers["props"];
             List<TmxLayerTile> propTiles = propsLayer.Tiles.Where(t => t.Gid > 0).ToList();
+            int halfCellSize = cellSize / 2;
 
+            var comparer = Comparer<TmxLayerTile>.Create((i1, i2) =>
+            {
+                Vector2 sprite1Position = new Vector2(i1.X * cellSize + halfCellSize,
+                    i1.Y * cellSize + halfCellSize);
+                Vector2 sprite2Position = new Vector2(i2.X * cellSize + halfCellSize,
+                    i2.Y * cellSize + halfCellSize);
+
+                return (int) ((sprite2Position - position).LengthSquared() - (sprite1Position - position).LengthSquared());
+            });
+            
+            propTiles.Sort(comparer);
             foreach (TmxLayerTile propTile in propTiles)
             {
                 TmxTileset tileset = GetTilesetForTile(map.Data, propTile);
                 if (tileset == null)
                     continue;
 
-                int halfCellSize = cellSize / 2;
+
                 Texture2D propTexture = map.Textures[tileset];
                 Vector2 spritePosition = new Vector2(propTile.X * cellSize + halfCellSize,
                     propTile.Y * cellSize + halfCellSize);

@@ -14,9 +14,11 @@ namespace game.Resource
     {
         private readonly GraphicsDevice graphicsDevice;
         private readonly string tilesetsPath;
+        private readonly World ecsContext;
 
-        public TmxMapResourceManager(GraphicsDevice graphicsDevice, string tilesetPath)
+        public TmxMapResourceManager(World context, GraphicsDevice graphicsDevice, string tilesetPath)
         {
+            this.ecsContext = context;
             this.graphicsDevice = graphicsDevice;
             this.tilesetsPath = tilesetPath;
         }
@@ -49,6 +51,8 @@ namespace game.Resource
                     map.Textures.Add(tileset, texture);
                 }
             }
+            
+            ecsContext.Publish(map);
         }
 
         private void CreateColliders(Map map, string collisionLayer = "collision")
