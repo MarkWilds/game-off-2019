@@ -6,6 +6,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="DefaultEcs" Version="0.12.0" />
     <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.0.1708" />
     <PackageReference Include="RoyT.AStar" Version="2.1.0" />
     <PackageReference Include="TiledSharp" Version="1.0.1" />
