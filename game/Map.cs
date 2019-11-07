@@ -96,48 +96,53 @@ namespace game.World
 
             return source;
         }
+        
+        private Rectangle GetTileBounds(int x, int y)
+        {
+            return new Rectangle(x * Data.TileWidth, y * Data.TileHeight, Data.TileWidth, Data.TileHeight);
+        }
 
-//        public Vector2 Move(Vector2 velocity, Entity entity, string collisionLayer = "collision")
-//        {
-//            TmxLayer layer = Data.Layers[collisionLayer];
-//
-//            Vector2 newPosition = entity.position + velocity;
-//            Rectangle sweptBounds = new Rectangle((int) (newPosition.X - entity.Width / 2),
-//                (int) (newPosition.Y - entity.Height / 2),
-//                entity.Width, entity.Height);
-//
-//            // create swept rectangle
-//            sweptBounds = Rectangle.Union(sweptBounds, entity.BoundingBox);
-//
-//            int minTileX = sweptBounds.Left / Data.TileWidth;
-//            int minTileY = sweptBounds.Top / Data.TileHeight;
-//
-//            int maxTileX = sweptBounds.Right / Data.TileWidth + 1;
-//            int maxTileY = sweptBounds.Bottom / Data.TileHeight + 1;
-//
-//            for (int y = minTileY; y < maxTileY; y++)
-//            {
-//                for (int x = minTileX; x < maxTileX; x++)
-//                {
-//                    if (x < 0 || x >= Data.Width ||
-//                        y < 0 || y >= Data.Height)
-//                        continue;
-//
-//                    TmxLayerTile tile = layer.Tiles[y * Data.Width + x];
-//                    if (GetTilesetForTile(tile) == null)
-//                        continue;
-//
-//                    Rectangle tileBounds = GetTileBounds(x, y);
-//                    Rectangle intersection = Rectangle.Intersect(tileBounds, sweptBounds);
-//
-//                    if (intersection.Width < intersection.Height)
-//                        velocity.X += -Math.Sign(velocity.X) * intersection.Width;
-//                    else
-//                        velocity.Y += -Math.Sign(velocity.Y) * intersection.Height;
-//                }
-//            }
-//
-//            return velocity;
-//        }
+        public Vector2 Move(Vector2 velocity, Vector2 position, string collisionLayer = "collision")
+        {
+            TmxLayer layer = Data.Layers[collisionLayer];
+
+            Vector2 newPosition = position + velocity;
+            Rectangle sweptBounds = new Rectangle((int) (newPosition.X - 16),
+                (int) (newPosition.Y - 16),
+                32, 32);
+
+            var bounds = new Rectangle((int) (position.X - 16), (int) (position.Y - 16), 32, 32);
+            sweptBounds = Rectangle.Union(sweptBounds, bounds);
+
+            int minTileX = sweptBounds.Left / Data.TileWidth;
+            int minTileY = sweptBounds.Top / Data.TileHeight;
+
+            int maxTileX = sweptBounds.Right / Data.TileWidth + 1;
+            int maxTileY = sweptBounds.Bottom / Data.TileHeight + 1;
+
+            for (int y = minTileY; y < maxTileY; y++)
+            {
+                for (int x = minTileX; x < maxTileX; x++)
+                {
+                    if (x < 0 || x >= Data.Width ||
+                        y < 0 || y >= Data.Height)
+                        continue;
+
+                    TmxLayerTile tile = layer.Tiles[y * Data.Width + x];
+                    if (GetTilesetForTile(tile) == null)
+                        continue;
+
+                    Rectangle tileBounds = GetTileBounds(x, y);
+                    Rectangle intersection = Rectangle.Intersect(tileBounds, sweptBounds);
+
+                    if (intersection.Width < intersection.Height)
+                        velocity.X += -Math.Sign(velocity.X) * intersection.Width;
+                    else
+                        velocity.Y += -Math.Sign(velocity.Y) * intersection.Height;
+                }
+            }
+
+            return velocity;
+        }
     }
 }
