@@ -13,9 +13,7 @@ namespace game.Systems
 
         private readonly EntitySet cameraBuilder;
         private Entity camera;
-        
-        private readonly int cellSize = 32;
-        
+
         public MapRendererSystem(SpriteBatch batch, 
             Texture2D blankTexture, World world)
         : base(world)
@@ -40,6 +38,7 @@ namespace game.Systems
             var mapData = entity.Get<Map>();
             var cameraTransform = camera.Get<Transform2D>();
             var cameraData = camera.Get<Camera>();
+            var cellSize = mapData.Data.TileWidth;
             
             renderer.ClearDepthBuffer();
             renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.angle,

@@ -4,6 +4,7 @@ using DefaultEcs;
 using DefaultEcs.Resource;
 using game.Components;
 using game.Resource.Resources;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
@@ -28,9 +29,13 @@ namespace game.Resource
 
         protected override void OnResourceLoaded(in Entity entity, string info, DisposableTmxMap resource)
         {
-            ref Map map = ref entity.Get<Map>();
+            ref var map = ref entity.Get<Map>();
             map.Data = resource.TmxMap;
             map.Textures = new Dictionary<TmxTileset, Texture2D>();
+            map.physicsWorld = new Humper.World(map.Data.Width * map.Data.TileWidth, 
+                map.Data.Height * map.Data.TileHeight);
+
+            CreateColliders(map);
 
             foreach (TmxTileset tileset in map.Data.Tilesets)
             {
@@ -42,6 +47,25 @@ namespace game.Resource
                 {
                     Texture2D texture = Texture2D.FromStream(graphicsDevice, stream);
                     map.Textures.Add(tileset, texture);
+                }
+            }
+        }
+
+        private void CreateColliders(Map map, string collisionLayer = "collision")
+        {
+            var data = map.Data;
+            TmxLayer layer = data.Layers[collisionLayer];
+
+            for (int y = 0; y < data.Height; y++)
+            {
+                for (int x = 0; x < data.Width; x++)
+                {
+                    TmxLayerTile tile = layer.Tiles[y * data.Width + x];
+                    if (RaycastRenderer.GetTilesetForTile(data, tile) == null)
+                        continue;
+                    
+                    map.physicsWorld.Create(x * data.TileWidth, y * data.TileHeight,
+                        data.TileWidth, data.TileHeight);
                 }
             }
         }
