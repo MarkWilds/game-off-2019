@@ -35,7 +35,7 @@ namespace game
         /// <param name="map">The map to draw</param>
         /// <param name="position">The position to draw from</param>
         /// <param name="orientation">The rotation to draw from in degrees</param>
-        public void RenderMap(SpriteBatch spriteBatch, MapData map, Vector2 position, float orientation, int cellSize,
+        public void RenderMap(SpriteBatch spriteBatch, Map map, Vector2 position, float orientation, int cellSize,
             string wallsLayer, float cameraFov)
         {
             var fov = (float) (cameraFov * Math.PI / 180.0f);
@@ -94,20 +94,20 @@ namespace game
             }
         }
 
-        public void RenderProps(MapData mapData, SpriteBatch batch, int cellSize, 
+        public void RenderProps(Map map, SpriteBatch batch, int cellSize, 
             Vector2 position, float orientation, float fov)
         {
-            TmxLayer propsLayer = mapData.Data.Layers["props"];
+            TmxLayer propsLayer = map.Data.Layers["props"];
             List<TmxLayerTile> propTiles = propsLayer.Tiles.Where(t => t.Gid > 0).ToList();
 
             foreach (TmxLayerTile propTile in propTiles)
             {
-                TmxTileset tileset = GetTilesetForTile(mapData.Data, propTile);
+                TmxTileset tileset = GetTilesetForTile(map.Data, propTile);
                 if (tileset == null)
                     continue;
 
                 int halfCellSize = cellSize / 2;
-                Texture2D propTexture = mapData.Textures[tileset];
+                Texture2D propTexture = map.Textures[tileset];
                 Vector2 spritePosition = new Vector2(propTile.X * cellSize + halfCellSize,
                     propTile.Y * cellSize + halfCellSize);
                 Rectangle source = GetSourceRectangleForTile(tileset, propTile);

@@ -1,6 +1,6 @@
 ﻿namespace game.Components
 {
-    public struct CameraData
+    public struct Camera
     {
         public float fov;
     }

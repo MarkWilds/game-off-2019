@@ -4,7 +4,7 @@ using TiledSharp;
 
 namespace game.Components
 {
-    public struct MapData
+    public struct Map
     {
         public TmxMap Data { get; set; }
         

@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace game.Systems
 {
-    [With(typeof(MapData))]
+    [With(typeof(Map))]
     public class MapRendererSystem : AEntitySystem<double>
     {
         private readonly SpriteBatch spriteBatch;
@@ -22,7 +22,7 @@ namespace game.Systems
         {
             cameraBuilder = world.GetEntities()
                 .With(typeof(Transform2D))
-                .With(typeof(CameraData))
+                .With(typeof(Camera))
                 .Build();
                         
             spriteBatch = batch;
@@ -37,9 +37,9 @@ namespace game.Systems
 
         protected override void Update(double state, in Entity entity)
         {
-            var mapData = entity.Get<MapData>();
+            var mapData = entity.Get<Map>();
             var cameraTransform = camera.Get<Transform2D>();
-            var cameraData = camera.Get<CameraData>();
+            var cameraData = camera.Get<Camera>();
             
             renderer.ClearDepthBuffer();
             renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.angle,

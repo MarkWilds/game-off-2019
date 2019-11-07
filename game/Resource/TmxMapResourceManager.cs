@@ -28,11 +28,11 @@ namespace game.Resource
 
         protected override void OnResourceLoaded(in Entity entity, string info, DisposableTmxMap resource)
         {
-            ref MapData mapData = ref entity.Get<MapData>();
-            mapData.Data = resource.TmxMap;
-            mapData.Textures = new Dictionary<TmxTileset, Texture2D>();
+            ref Map map = ref entity.Get<Map>();
+            map.Data = resource.TmxMap;
+            map.Textures = new Dictionary<TmxTileset, Texture2D>();
 
-            foreach (TmxTileset tileset in mapData.Data.Tilesets)
+            foreach (TmxTileset tileset in map.Data.Tilesets)
             {
                 string pathToResource = Path.Combine(tilesetsPath, Path.GetFileName(tileset.Image.Source));
                 if (!File.Exists(pathToResource))
@@ -41,7 +41,7 @@ namespace game.Resource
                 using (FileStream stream = new FileStream(pathToResource, FileMode.Open))
                 {
                     Texture2D texture = Texture2D.FromStream(graphicsDevice, stream);
-                    mapData.Textures.Add(tileset, texture);
+                    map.Textures.Add(tileset, texture);
                 }
             }
         }
