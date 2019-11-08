@@ -13,6 +13,7 @@ namespace game
         private Texture2D blankTexture;
         private Viewport viewport;
         private float[] zBuffer;
+        private int shadeFactor = 160;
 
         public RaycastRenderer(Viewport view, Texture2D blank)
         {
@@ -90,6 +91,9 @@ namespace game
                 // get texture tint
                 float dot = Vector2.Dot(castData.normal, Vector2.UnitY);
                 Color lightingTint = Math.Abs(dot) > 0.9f ? Color.Gray : Color.White;
+                lightingTint.R = (byte) (Math.Min(255, lightingTint.R * shadeFactor / distance));
+                lightingTint.G = (byte) (Math.Min(255, lightingTint.G * shadeFactor / distance));
+                lightingTint.B = (byte) (Math.Min(255, lightingTint.B * shadeFactor / distance));
 
                 spriteBatch.Draw(map.Textures[tileset], wallRectangle, textureRectangle, lightingTint);
 
@@ -224,6 +228,11 @@ namespace game
             float sourceOffset = noOffsetNeeded ? 0 : source.Width - spriteSizeRange / (float)spriteSize * source.Width;
             
             source.Width = (int) Math.Ceiling(spritePart);
+            
+            Color lightingTint = Color.White;
+            lightingTint.R = (byte) (Math.Min(255, lightingTint.R * shadeFactor / correctedDistance));
+            lightingTint.G = (byte) (Math.Min(255, lightingTint.G * shadeFactor / correctedDistance));
+            lightingTint.B = (byte) (Math.Min(255, lightingTint.B * shadeFactor / correctedDistance));
             for (int x = 0; x < spriteSizeRange; x++)
             {
                 int screenColumn = startPosition + x;
@@ -234,7 +243,7 @@ namespace game
 
                 spriteBatch.Draw(texture,
                     new Rectangle(screenColumn, viewport.Height / 2 - halfSprite, 1, spriteSize),
-                    source, Color.White);
+                    source, lightingTint);
             }
         }
 
@@ -282,7 +291,6 @@ namespace game
 
         public static TmxTileset GetTilesetForTile(TmxMap data, TmxLayerTile tile)
         {
-            // TODO: fix tileset choosing, might have to refactor the tiledSharp lib for it
             // we now assume that tilesets are ordered in ascending order by gid
             int tilesetCount = data.Tilesets.Count;
             for (int i = 0; i < tilesetCount; i++)
