@@ -39,8 +39,9 @@ namespace game
             string wallsLayer, float cameraFov)
         {
             var fov = (float) (cameraFov * Math.PI / 180.0f);
-            
+
             TmxMap mapData = map.Data;
+//            TmxLayer floorLayer = mapData.Layers["floor1"];
             int slices = viewport.Width;
             float halfFov = fov / 2;
             float focalLength = slices / 2 / (float) Math.Tan(halfFov);
@@ -56,9 +57,9 @@ namespace game
                 Color.DarkKhaki);
 
             // draw all wallslices
-            for (int x = 0; x < slices; x++)
+            for (int column = 0; column < slices; column++)
             {
-                float angle = beginAngle + x * sliceAngle;
+                float angle = beginAngle + column * sliceAngle;
 
                 RayCaster.HitData castData;
                 if (!RayCaster.RayIntersectsGrid(position, angle, cellSize, out castData,
@@ -76,10 +77,10 @@ namespace game
                 // fix fisheye for distance and get slice height
                 float distance = (float) (castData.rayLength * Math.Cos(angle - cameraAngle));
                 int sliceHeight = (int) (cellSize * focalLength / distance);
-                zBuffer[x] = distance;
+                zBuffer[column] = distance;
 
                 // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(x, viewport.Height / 2 - sliceHeight / 2, 1, sliceHeight);
+                Rectangle wallRectangle = new Rectangle(column, viewport.Height / 2 - sliceHeight / 2, 1, sliceHeight);
                 Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
 
                 textureRectangle.X =
@@ -91,6 +92,46 @@ namespace game
                 Color lightingTint = Math.Abs(dot) > 0.9f ? Color.Gray : Color.White;
 
                 spriteBatch.Draw(map.Textures[tileset], wallRectangle, textureRectangle, lightingTint);
+
+                // draw floor
+//                int bottomOfSlice = (int)Math.Floor(viewport.Height / 2.0 + sliceHeight / 2.0);
+//                int playerHeight = 16;
+//                var projectionPlaneCenter = viewport.Height / 2.0;
+//                for (int row = bottomOfSlice; row < viewport.Height; row++)
+//                {
+//                    var ratio = playerHeight / (row - projectionPlaneCenter);
+//                    var diagonalDistance = Math.Floor(focalLength * ratio * Math.Cos(angle - cameraAngle));
+//
+//                    float xEnd = (float) Math.Floor(Math.Cos(angle) * diagonalDistance) + position.X;
+//                    float yEnd = (float) Math.Floor(Math.Sin(angle) * diagonalDistance) + position.Y;
+//
+//                    int cellX = (int) Math.Floor(xEnd / cellSize);
+//                    int cellY = (int) Math.Floor(yEnd / cellSize);
+//
+//                    if (cellX < 0 || cellX >= mapData.Width ||
+//                        cellY < 0 || cellY >= mapData.Height)
+//                        continue;
+//                    float cellXFraction = cellX % cellSize;
+//                    float cellYFraction = cellY % cellSize;
+//                
+//                    // get the texture slice
+//                    tileIndex = cellY * mapData.Width + cellX;
+//                    tile = floorLayer.Tiles[tileIndex];
+//                    tileset = GetTilesetForTile(mapData, tile);
+//                    if (tileset == null)
+//                        continue;
+//                
+//                    // get drawing rectangles
+//                    Rectangle pixel = new Rectangle(column, row, 1, 1);
+//                    Rectangle texture = GetSourceRectangleForTile(tileset, tile);
+//
+//                    texture.X = (int) (texture.X + (texture.Width * cellXFraction) % cellSize);
+//                    texture.Y = (int) (texture.Y + (texture.Height * cellYFraction) % cellSize);
+//                    texture.Width = 1;
+//                    texture.Height = 1;
+//                
+//                    spriteBatch.Draw(map.Textures[tileset], pixel, texture, Color.White);
+//                }
             }
         }
 

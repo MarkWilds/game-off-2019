@@ -5,10 +5,8 @@ using game.Components;
 using game.Resource;
 using game.Resource.Resources;
 using game.Systems;
-using Humper;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using World = DefaultEcs.World;
 
 namespace game
 {
@@ -30,11 +28,12 @@ namespace game
 
         protected override void LoadContent()
         {
-            SpriteBatch spriteBatch = new SpriteBatch(GraphicsDevice);
-            Texture2D blankTexture = Content.Load<Texture2D>("blank");
+            var spriteBatch = new SpriteBatch(GraphicsDevice);
+            var blankTexture = Content.Load<Texture2D>("blank");
 
             ecsContext = new World(1337);
             ecsContext.Subscribe(this);
+            
             ecsSystems = new SequentialSystem<double>(
                 new ActionSystem<double>(_ => InputManager.Update()),
                 new PlayerControllerSystem(ecsContext),
