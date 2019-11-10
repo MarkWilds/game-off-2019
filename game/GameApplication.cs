@@ -30,9 +30,8 @@ namespace game
         protected override void LoadContent()
         {
             var spriteBatch = new SpriteBatch(GraphicsDevice);
-            var blankTexture = Content.Load<Texture2D>("blank");
 
-            ecsContext = new World(1337);
+            ecsContext = new World(1 << 8);
             ecsContext.Subscribe(this);
             
             updateSystems = new SequentialSystem<double>(
@@ -41,7 +40,7 @@ namespace game
             );
 
             var preferedSourceRectangle = GetPreferedScreenSizeRectangle(320, 240);
-            drawSystems = new MapRendererSystem(320, 240, spriteBatch, blankTexture, 
+            drawSystems = new MapRendererSystem(320, 240, spriteBatch, 
                 preferedSourceRectangle, ecsContext);
 
             var mapEntity = ecsContext.CreateEntity();
@@ -51,7 +50,7 @@ namespace game
             player = ecsContext.CreateEntity();
             player.Set<Transform2D>();
             player.Set(new Camera() {fov = 60.0f});
-            player.Set(new Physics2D() {speed = 128});
+            player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
 
             var tmxResourceManager = new TmxMapResourceManager(ecsContext, GraphicsDevice,
                 @"Content/Tilesets");

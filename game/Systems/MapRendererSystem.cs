@@ -21,7 +21,7 @@ namespace game.Systems
         private RenderTarget2D sceneTarget;
 
         public MapRendererSystem(int width, int height, SpriteBatch batch,
-            Texture2D blankTexture, Rectangle preferedSource, World world)
+            Rectangle preferedSource, World world)
             : base(world)
         {
             cameraBuilder = world.GetEntities()
@@ -34,6 +34,10 @@ namespace game.Systems
             screenHeight = height;
 
             spriteBatch = batch;
+            
+            var blankTexture = new Texture2D(batch.GraphicsDevice, 1, 1);
+            blankTexture.SetData(new[]{Color.White});
+            
             renderer = new RaycastRenderer(screenWidth, screenHeight, blankTexture);
             sceneTarget = new RenderTarget2D(batch.GraphicsDevice, screenWidth, screenHeight, false,
                 SurfaceFormat.Color,
@@ -50,13 +54,14 @@ namespace game.Systems
             var cellSize = mapData.Data.TileWidth;
 
             spriteBatch.GraphicsDevice.SetRenderTarget(sceneTarget);
-            spriteBatch.Begin();
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             renderer.ClearDepthBuffer();
+            
             renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.angle,
-                cellSize, "walls1", cameraData.fov);
+                cellSize, "walls1", in cameraData);
             renderer.RenderProps(mapData, spriteBatch, cellSize, cameraTransform.position,
-                cameraTransform.angle, cameraData.fov);
+                cameraTransform.angle, in cameraData);
 
             spriteBatch.End();
 

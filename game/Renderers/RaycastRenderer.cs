@@ -40,9 +40,9 @@ namespace game
         /// <param name="position">The position to draw from</param>
         /// <param name="orientation">The rotation to draw from in degrees</param>
         public void RenderMap(SpriteBatch spriteBatch, Map map, Vector2 position, float orientation, int cellSize,
-            string wallsLayer, float cameraFov)
+            string wallsLayer, in Camera camera)
         {
-            var fov = (float) (cameraFov * Math.PI / 180.0f);
+            var fov = (float) (camera.fov * Math.PI / 180.0f);
 
             TmxMap mapData = map.Data;
 //            TmxLayer floorLayer = mapData.Layers["floor1"];
@@ -55,9 +55,9 @@ namespace game
             float beginAngle = cameraAngle - halfFov;
 
             // draw ceiling and floor
-            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2),
+            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2 - camera.bobFactor),
                 Color.FromNonPremultiplied(23, 14, 8, 255));
-            spriteBatch.Draw(blankTexture, new Rectangle(0, height / 2, width, height / 2),
+            spriteBatch.Draw(blankTexture, new Rectangle(0, height / 2 -camera.bobFactor, width, height / 2 + camera.bobFactor),
                 Color.DarkKhaki);
 
             // draw all wallslices
@@ -84,7 +84,7 @@ namespace game
                 zBuffer[column] = distance;
 
                 // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(column, height / 2 - sliceHeight / 2, 1, sliceHeight);
+                Rectangle wallRectangle = new Rectangle(column, height / 2 - sliceHeight / 2 - camera.bobFactor, 1, sliceHeight);
                 Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
 
                 textureRectangle.X =
@@ -143,7 +143,7 @@ namespace game
         }
 
         public void RenderProps(Map map, SpriteBatch batch, int cellSize, 
-            Vector2 position, float orientation, float fov)
+            Vector2 position, float orientation, in Camera camera)
         {
             TmxLayer propsLayer = map.Data.Layers["props"];
             List<TmxLayerTile> propTiles = propsLayer.Tiles.Where(t => t.Gid > 0).ToList();
@@ -173,7 +173,7 @@ namespace game
                 Rectangle source = GetSourceRectangleForTile(tileset, propTile);
 
                 RenderSprite(batch, spritePosition, propTexture, source,
-                    position, orientation, fov);
+                    position, orientation, in camera);
             }
         }
 
@@ -186,9 +186,9 @@ namespace game
         /// <param name="camera">camera position</param>
         /// <param name="orientation">camera angle in degrees</param>
         public void RenderSprite(SpriteBatch spriteBatch, Vector2 position, Texture2D texture, Rectangle source,
-            Vector2 camera, float orientation, float cameraFov)
+            Vector2 playerPosition, float orientation, in Camera camera)
         {
-            var fov = (float) (cameraFov * Math.PI / 180.0f);
+            var fov = (float) (camera.fov * Math.PI / 180.0f);
             
             int slices = width;
             int halfSlice = slices / 2;
@@ -197,7 +197,7 @@ namespace game
             float focalLength = halfSlice / (float) Math.Tan(halfFov);
 
             Vector2 cameraForward = new Vector2((float) Math.Cos(cameraAngle), (float) Math.Sin(cameraAngle));
-            Vector2 spriteCameraSpace = position - camera;
+            Vector2 spriteCameraSpace = position - playerPosition;
 
             if (Vector2.Dot(cameraForward, spriteCameraSpace) <= 0)
                 return;
@@ -245,7 +245,7 @@ namespace game
                 source.X = tileStart + (int) (sourceOffset + x * spritePart);
 
                 spriteBatch.Draw(texture,
-                    new Rectangle(screenColumn, height / 2 - halfSprite, 1, spriteSize),
+                    new Rectangle(screenColumn, height / 2 - halfSprite - camera.bobFactor, 1, spriteSize),
                     source, lightingTint);
             }
         }
