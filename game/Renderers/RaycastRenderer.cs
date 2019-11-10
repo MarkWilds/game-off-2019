@@ -11,15 +11,18 @@ namespace game
     public class RaycastRenderer
     {
         private Texture2D blankTexture;
-        private Viewport viewport;
         private float[] zBuffer;
         private int shadeFactor = 160;
 
-        public RaycastRenderer(Viewport view, Texture2D blank)
+        private readonly int width;
+        private readonly int height;
+
+        public RaycastRenderer(int width, int height, Texture2D blank)
         {
-            viewport = view;
+            this.width = width;
+            this.height = height;
             blankTexture = blank;
-            zBuffer = new float[viewport.Width];
+            zBuffer = new float[this.width];
         }
 
         public void ClearDepthBuffer()
@@ -43,7 +46,7 @@ namespace game
 
             TmxMap mapData = map.Data;
 //            TmxLayer floorLayer = mapData.Layers["floor1"];
-            int slices = viewport.Width;
+            int slices = width;
             float halfFov = fov / 2;
             float focalLength = slices / 2 / (float) Math.Tan(halfFov);
             float cameraAngle = orientation * (float) (Math.PI / 180.0f);
@@ -52,9 +55,9 @@ namespace game
             float beginAngle = cameraAngle - halfFov;
 
             // draw ceiling and floor
-            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, viewport.Width, viewport.Height / 2),
+            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2),
                 Color.FromNonPremultiplied(23, 14, 8, 255));
-            spriteBatch.Draw(blankTexture, new Rectangle(0, viewport.Height / 2, viewport.Width, viewport.Height / 2),
+            spriteBatch.Draw(blankTexture, new Rectangle(0, height / 2, width, height / 2),
                 Color.DarkKhaki);
 
             // draw all wallslices
@@ -81,7 +84,7 @@ namespace game
                 zBuffer[column] = distance;
 
                 // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(column, viewport.Height / 2 - sliceHeight / 2, 1, sliceHeight);
+                Rectangle wallRectangle = new Rectangle(column, height / 2 - sliceHeight / 2, 1, sliceHeight);
                 Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
 
                 textureRectangle.X =
@@ -187,7 +190,7 @@ namespace game
         {
             var fov = (float) (cameraFov * Math.PI / 180.0f);
             
-            int slices = viewport.Width;
+            int slices = width;
             int halfSlice = slices / 2;
             float halfFov = fov / 2;
             float cameraAngle = orientation * (float) (Math.PI / 180.0f);
@@ -242,7 +245,7 @@ namespace game
                 source.X = tileStart + (int) (sourceOffset + x * spritePart);
 
                 spriteBatch.Draw(texture,
-                    new Rectangle(screenColumn, viewport.Height / 2 - halfSprite, 1, spriteSize),
+                    new Rectangle(screenColumn, height / 2 - halfSprite, 1, spriteSize),
                     source, lightingTint);
             }
         }

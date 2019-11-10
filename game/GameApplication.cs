@@ -40,7 +40,9 @@ namespace game
                 new PlayerControllerSystem(ecsContext)
             );
 
-            drawSystems = new MapRendererSystem(spriteBatch, blankTexture, ecsContext);
+            var preferedSourceRectangle = GetPreferedScreenSizeRectangle(320, 240);
+            drawSystems = new MapRendererSystem(320, 240, spriteBatch, blankTexture, 
+                preferedSourceRectangle, ecsContext);
 
             var mapEntity = ecsContext.CreateEntity();
             mapEntity.Set<Map>();
@@ -64,6 +66,27 @@ namespace game
         protected override void Draw(GameTime gameTime)
         {
             drawSystems.Update(gameTime.ElapsedGameTime.TotalSeconds);
+        }
+        
+        private Rectangle GetPreferedScreenSizeRectangle(int width, int height)
+        {
+            var windowWidth = Window.ClientBounds.Width;
+            var windowHeight = Window.ClientBounds.Height;
+            float outputAspect = windowWidth / (float)windowHeight;
+            float preferredAspect = width / (float)height;
+            
+            if (outputAspect <= preferredAspect)
+            {
+                // output is taller than it is wider, bars on top/bottom
+                int presentHeight = (int)((windowWidth / preferredAspect) + 0.5f);
+                int barHeight = (windowHeight - presentHeight) / 2;
+                return new Rectangle(0, barHeight, windowWidth, presentHeight);
+            }
+
+            // output is wider than it is tall, bars left/right
+            int presentWidth = (int)((windowHeight * preferredAspect) + 0.5f);
+            int barWidth = (windowWidth - presentWidth) / 2;
+            return new Rectangle(barWidth, 0, presentWidth, windowHeight);
         }
 
         [Subscribe]
