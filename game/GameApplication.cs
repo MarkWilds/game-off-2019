@@ -13,7 +13,8 @@ namespace game
     public class GameApplication : Game
     {
         private World ecsContext;
-        private ISystem<double> ecsSystems;
+        private ISystem<double> updateSystems;
+        private ISystem<double> drawSystems;
         private Entity player;
 
         public GameApplication()
@@ -34,11 +35,12 @@ namespace game
             ecsContext = new World(1337);
             ecsContext.Subscribe(this);
             
-            ecsSystems = new SequentialSystem<double>(
+            updateSystems = new SequentialSystem<double>(
                 new ActionSystem<double>(_ => InputManager.Update()),
-                new PlayerControllerSystem(ecsContext),
-                new MapRendererSystem(spriteBatch, blankTexture, ecsContext)
+                new PlayerControllerSystem(ecsContext)
             );
+
+            drawSystems = new MapRendererSystem(spriteBatch, blankTexture, ecsContext);
 
             var mapEntity = ecsContext.CreateEntity();
             mapEntity.Set<Map>();
@@ -54,9 +56,14 @@ namespace game
             tmxResourceManager.Manage(ecsContext);
         }
 
-        protected override void Update(GameTime deltaTime)
+        protected override void Update(GameTime gameTime)
         {
-            ecsSystems.Update(deltaTime.ElapsedGameTime.TotalSeconds);
+            updateSystems.Update(gameTime.ElapsedGameTime.TotalSeconds);
+        }
+        
+        protected override void Draw(GameTime gameTime)
+        {
+            drawSystems.Update(gameTime.ElapsedGameTime.TotalSeconds);
         }
 
         [Subscribe]

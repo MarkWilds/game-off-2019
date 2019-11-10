@@ -4,7 +4,6 @@ using DefaultEcs;
 using DefaultEcs.Resource;
 using game.Components;
 using game.Resource.Resources;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
@@ -58,19 +57,12 @@ namespace game.Resource
         private void CreateColliders(Map map, string collisionLayer = "collision")
         {
             var data = map.Data;
-            TmxLayer layer = data.Layers[collisionLayer];
+            TmxObjectGroup objects = data.ObjectGroups[collisionLayer];
 
-            for (int y = 0; y < data.Height; y++)
+            foreach (var tmxObject in objects.Objects)
             {
-                for (int x = 0; x < data.Width; x++)
-                {
-                    TmxLayerTile tile = layer.Tiles[y * data.Width + x];
-                    if (RaycastRenderer.GetTilesetForTile(data, tile) == null)
-                        continue;
-                    
-                    map.physicsWorld.Create(x * data.TileWidth, y * data.TileHeight,
-                        data.TileWidth, data.TileHeight);
-                }
+                map.physicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
+                    (float)tmxObject.Width, (float)tmxObject.Height);
             }
         }
     }
