@@ -12,7 +12,7 @@ namespace game
     {
         private Texture2D blankTexture;
         private float[] zBuffer;
-        private int shadeFactor = 160;
+        private const int ShadeFactor = 160;
 
         private readonly int width;
         private readonly int height;
@@ -42,10 +42,11 @@ namespace game
         public void RenderMap(SpriteBatch spriteBatch, Map map, Vector2 position, float orientation, int cellSize,
             string wallsLayer, in Camera camera)
         {
+            var playerHeight = cellSize / 2;
             var fov = (float) (camera.fov * Math.PI / 180.0f);
 
             TmxMap mapData = map.Data;
-//            TmxLayer floorLayer = mapData.Layers["floor1"];
+            TmxLayer floorLayer = mapData.Layers["floor1"];
             int slices = width;
             float halfFov = fov / 2;
             float focalLength = slices / 2 / (float) Math.Tan(halfFov);
@@ -58,7 +59,7 @@ namespace game
             spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2 - camera.bobFactor),
                 Color.FromNonPremultiplied(23, 14, 8, 255));
             spriteBatch.Draw(blankTexture, new Rectangle(0, height / 2 -camera.bobFactor, width, height / 2 + camera.bobFactor),
-                Color.DarkKhaki);
+                Color.Black);
 
             // draw all wallslices
             for (int column = 0; column < slices; column++)
@@ -84,7 +85,8 @@ namespace game
                 zBuffer[column] = distance;
 
                 // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(column, height / 2 - sliceHeight / 2 - camera.bobFactor, 1, sliceHeight);
+                var topOfWallSlice = height / 2 - sliceHeight / 2 - camera.bobFactor;
+                Rectangle wallRectangle = new Rectangle(column, topOfWallSlice, 1, sliceHeight);
                 Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
 
                 textureRectangle.X =
@@ -94,51 +96,51 @@ namespace game
                 // get texture tint
                 float dot = Vector2.Dot(castData.normal, Vector2.UnitY);
                 Color lightingTint = Math.Abs(dot) > 0.9f ? Color.Gray : Color.White;
-                lightingTint.R = (byte) (Math.Min(255, lightingTint.R * shadeFactor / distance));
-                lightingTint.G = (byte) (Math.Min(255, lightingTint.G * shadeFactor / distance));
-                lightingTint.B = (byte) (Math.Min(255, lightingTint.B * shadeFactor / distance));
+                lightingTint.R = (byte) (Math.Min(255, lightingTint.R * ShadeFactor / distance));
+                lightingTint.G = (byte) (Math.Min(255, lightingTint.G * ShadeFactor / distance));
+                lightingTint.B = (byte) (Math.Min(255, lightingTint.B * ShadeFactor / distance));
 
                 spriteBatch.Draw(map.Textures[tileset], wallRectangle, textureRectangle, lightingTint);
 
                 // draw floor
-//                int bottomOfSlice = (int)Math.Floor(viewport.Height / 2.0 + sliceHeight / 2.0);
-//                int playerHeight = 16;
-//                var projectionPlaneCenter = viewport.Height / 2.0;
-//                for (int row = bottomOfSlice; row < viewport.Height; row++)
-//                {
-//                    var ratio = playerHeight / (row - projectionPlaneCenter);
-//                    var diagonalDistance = Math.Floor(focalLength * ratio * Math.Cos(angle - cameraAngle));
-//
-//                    float xEnd = (float) Math.Floor(Math.Cos(angle) * diagonalDistance) + position.X;
-//                    float yEnd = (float) Math.Floor(Math.Sin(angle) * diagonalDistance) + position.Y;
-//
-//                    int cellX = (int) Math.Floor(xEnd / cellSize);
-//                    int cellY = (int) Math.Floor(yEnd / cellSize);
-//
-//                    if (cellX < 0 || cellX >= mapData.Width ||
-//                        cellY < 0 || cellY >= mapData.Height)
-//                        continue;
-//                    float cellXFraction = cellX % cellSize;
-//                    float cellYFraction = cellY % cellSize;
-//                
-//                    // get the texture slice
-//                    tileIndex = cellY * mapData.Width + cellX;
-//                    tile = floorLayer.Tiles[tileIndex];
-//                    tileset = GetTilesetForTile(mapData, tile);
-//                    if (tileset == null)
-//                        continue;
-//                
-//                    // get drawing rectangles
-//                    Rectangle pixel = new Rectangle(column, row, 1, 1);
-//                    Rectangle texture = GetSourceRectangleForTile(tileset, tile);
-//
-//                    texture.X = (int) (texture.X + (texture.Width * cellXFraction) % cellSize);
-//                    texture.Y = (int) (texture.Y + (texture.Height * cellYFraction) % cellSize);
-//                    texture.Width = 1;
-//                    texture.Height = 1;
-//                
-//                    spriteBatch.Draw(map.Textures[tileset], pixel, texture, Color.White);
-//                }
+                int startOfGroundSlice = topOfWallSlice + sliceHeight + 1;
+                var projectionPlaneCenter = height / 2.0 - camera.bobFactor;
+                for (int row = startOfGroundSlice; row < height; row++)
+                {
+                    var ratio = playerHeight / (row - projectionPlaneCenter);
+                    var diagonalDistance = focalLength * ratio / Math.Cos(angle - cameraAngle);
+
+                    double xEnd = Math.Cos(angle) * diagonalDistance + position.X;
+                    double yEnd = Math.Sin(angle) * diagonalDistance + position.Y;
+
+                    int cellX = (int) xEnd / cellSize;
+                    int cellY = (int) Math.Floor(yEnd / cellSize);
+
+                    if (cellX < 0 || cellX >= mapData.Width ||
+                        cellY < 0 || cellY >= mapData.Height)
+                        continue;
+                    
+                    double cellXFraction = xEnd % cellSize / cellSize;
+                    double cellYFraction = yEnd % cellSize / cellSize;
+                
+                    // get the texture slice
+                    tileIndex = cellY * mapData.Width + cellX;
+                    tile = floorLayer.Tiles[tileIndex];
+                    tileset = GetTilesetForTile(mapData, tile);
+                    if (tileset == null)
+                        continue;
+                
+                    // get drawing rectangles
+                    Rectangle groundPixel = new Rectangle(column, row, 1, 1);
+                    Rectangle texture = GetSourceRectangleForTile(tileset, tile);
+
+                    texture.X = (int) (texture.X + (texture.Width * cellXFraction) % cellSize);
+                    texture.Y = (int) (texture.Y + (texture.Height * cellYFraction) % cellSize);
+                    texture.Width = 1;
+                    texture.Height = 1;
+                
+                    spriteBatch.Draw(map.Textures[tileset], groundPixel, texture, Color.White);
+                }
             }
         }
 
@@ -233,9 +235,9 @@ namespace game
             source.Width = (int) Math.Ceiling(spritePart);
             
             Color lightingTint = Color.White;
-            lightingTint.R = (byte) (Math.Min(255, lightingTint.R * shadeFactor / correctedDistance));
-            lightingTint.G = (byte) (Math.Min(255, lightingTint.G * shadeFactor / correctedDistance));
-            lightingTint.B = (byte) (Math.Min(255, lightingTint.B * shadeFactor / correctedDistance));
+            lightingTint.R = (byte) (Math.Min(255, lightingTint.R * ShadeFactor / correctedDistance));
+            lightingTint.G = (byte) (Math.Min(255, lightingTint.G * ShadeFactor / correctedDistance));
+            lightingTint.B = (byte) (Math.Min(255, lightingTint.B * ShadeFactor / correctedDistance));
             for (int x = 0; x < spriteSizeRange; x++)
             {
                 int screenColumn = startPosition + x;

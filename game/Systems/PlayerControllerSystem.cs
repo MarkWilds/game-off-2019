@@ -15,8 +15,8 @@ namespace game.Systems
         private const float MouseSpeed = 20.0f;
         private const double Deadzone = 2.0;
         private double bobTimer;
-        private int bobSpeed = 12;
-        private int bobOffset = 4;
+        private int bobSpeed = 11;
+        private int bobOffset = 3;
 
         private Vector2 accumelatedForce;
         private const float dragFactor = 0.1f;
