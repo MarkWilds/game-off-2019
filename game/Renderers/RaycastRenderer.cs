@@ -139,7 +139,11 @@ namespace game
                     texture.Width = 1;
                     texture.Height = 1;
                 
-                    spriteBatch.Draw(map.Textures[tileset], groundPixel, texture, Color.White);
+                    Color groundTint = Color.White;
+                    groundTint.R = (byte) (Math.Min(255, groundTint.R * ShadeFactor / diagonalDistance));
+                    groundTint.G = (byte) (Math.Min(255, groundTint.G * ShadeFactor / diagonalDistance));
+                    groundTint.B = (byte) (Math.Min(255, groundTint.B * ShadeFactor / diagonalDistance));
+                    spriteBatch.Draw(map.Textures[tileset], groundPixel, texture, groundTint);
                 }
             }
         }
