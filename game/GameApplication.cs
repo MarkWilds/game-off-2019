@@ -7,14 +7,15 @@ using game.Resource.Resources;
 using game.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nez;
 
 namespace game
 {
     public class GameApplication : Game
     {
         private World ecsContext;
-        private ISystem<double> updateSystems;
-        private ISystem<double> drawSystems;
+        private ISystem<GameTime> updateSystems;
+        private ISystem<GameTime> drawSystems;
         private Entity player;
 
         public GameApplication()
@@ -22,7 +23,8 @@ namespace game
             IsFixedTimeStep = true;
             new GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = 1024, PreferredBackBufferHeight = 768
+                PreferredBackBufferWidth = 1024, PreferredBackBufferHeight = 768,
+//                IsFullScreen = true
             };
             Content.RootDirectory = "Content";
         }
@@ -34,8 +36,8 @@ namespace game
             ecsContext = new World(1 << 8);
             ecsContext.Subscribe(this);
             
-            updateSystems = new SequentialSystem<double>(
-                new ActionSystem<double>(_ => InputManager.Update()),
+            updateSystems = new SequentialSystem<GameTime>(
+                new ActionSystem<GameTime>(Input.Update),
                 new PlayerControllerSystem(ecsContext)
             );
 
@@ -59,12 +61,12 @@ namespace game
 
         protected override void Update(GameTime gameTime)
         {
-            updateSystems.Update(gameTime.ElapsedGameTime.TotalSeconds);
+            updateSystems.Update(gameTime);
         }
         
         protected override void Draw(GameTime gameTime)
         {
-            drawSystems.Update(gameTime.ElapsedGameTime.TotalSeconds);
+            drawSystems.Update(gameTime);
         }
         
         private Rectangle GetPreferedScreenSizeRectangle(int width, int height)

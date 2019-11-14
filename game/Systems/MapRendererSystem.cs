@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace game.Systems
 {
     [With(typeof(Map))]
-    public class MapRendererSystem : AEntitySystem<double>
+    public class MapRendererSystem : AEntitySystem<GameTime>
     {
         private readonly SpriteBatch spriteBatch;
         private readonly RaycastRenderer renderer;
@@ -44,7 +44,7 @@ namespace game.Systems
                 DepthFormat.None, 0, RenderTargetUsage.DiscardContents);
         }
 
-        protected override void Update(double state, in Entity entity)
+        protected override void Update(GameTime state, in Entity entity)
         {
             camera = cameraBuilder.GetEntities()[0];
 

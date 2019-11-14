@@ -5,12 +5,14 @@ using game.Components;
 using Humper;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Nez;
 using World = DefaultEcs.World;
 
 namespace game.Systems
 {
     [With(typeof(Transform2D), typeof(Physics2D), typeof(Camera))]
-    public class PlayerControllerSystem : AEntitySystem<double>
+    public class PlayerControllerSystem : AEntitySystem<GameTime>
     {
         private const float MouseSpeed = 40.0f;
         private double bobTimer;
@@ -19,27 +21,35 @@ namespace game.Systems
         
         private const float dragFactor = 0.1f;
 
+        private readonly VirtualIntegerAxis horizontalAxis;
+        private readonly VirtualIntegerAxis verticalAxis;
+
         public PlayerControllerSystem(World world) : base(world)
         {
-//            InputManager.CenterMouse = false;
+            horizontalAxis = new VirtualIntegerAxis();
+            horizontalAxis.AddKeyboardKeys(VirtualInput.OverlapBehavior.CancelOut, Keys.A, Keys.D);
+            
+            verticalAxis = new VirtualIntegerAxis();
+            verticalAxis.AddKeyboardKeys(VirtualInput.OverlapBehavior.CancelOut, Keys.S, Keys.W);
         }
 
-        protected override void Update(double deltaTime, in Entity entity)
+        protected override void Update(GameTime time, in Entity entity)
         {
             ref var transform = ref entity.Get<Transform2D>();
             ref var camera = ref entity.Get<Camera>();
             ref var physics2D = ref entity.Get<Physics2D>();
             ref var collider = ref entity.Get<IBox>();
             
-            bobTimer += deltaTime * bobSpeed;
-            transform.angle += (float)(InputManager.MouseAxisX * MouseSpeed * deltaTime);
+            bobTimer += time.ElapsedGameTime.TotalSeconds * bobSpeed;
+            var mouseDelta = Input.MousePositionDelta;
+            transform.angle += (float)(mouseDelta.X * MouseSpeed * time.ElapsedGameTime.TotalSeconds);
 
             double angleRad = transform.angle * Math.PI / 180;
             Vector2 forward = new Vector2((float) Math.Cos(angleRad),(float) Math.Sin(angleRad));
             Vector2 right = new Vector2(-forward.Y, forward.X);
 
             // force in the direction we want to move
-            var accelerationDirection = forward * InputManager.VerticalAxis + right * InputManager.HorizontalAxis;
+            var accelerationDirection = forward * verticalAxis + right * horizontalAxis;
             var accumulatedForce = Vector2.Zero;
             if (accelerationDirection.LengthSquared() > 0)
             {
@@ -48,7 +58,7 @@ namespace game.Systems
             }
 
             // integration
-            physics2D.velocity += accumulatedForce * (float) deltaTime;
+            physics2D.velocity += accumulatedForce * (float) time.ElapsedGameTime.TotalSeconds;
             physics2D.velocity += physics2D.velocity * -dragFactor;
 
             // constraint
