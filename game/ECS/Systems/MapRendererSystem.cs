@@ -1,6 +1,7 @@
 ﻿using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.Raycasting;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

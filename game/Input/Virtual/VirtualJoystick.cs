@@ -2,8 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-
-namespace Nez
+namespace game.Input.Virtual
 {
 	/// <summary>
 	/// A virtual input that is represented as a Vector2, with both X and Y as values between -1 and 1

@@ -2,11 +2,11 @@
 using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.Input.Virtual;
 using Humper;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Nez;
 using World = DefaultEcs.World;
 
 namespace game.ECS.Systems
@@ -41,7 +41,7 @@ namespace game.ECS.Systems
             ref var collider = ref entity.Get<IBox>();
             
             bobTimer += time.ElapsedGameTime.TotalSeconds * bobSpeed;
-            var mouseDelta = Input.MousePositionDelta;
+            var mouseDelta = Input.Input.MousePositionDelta;
             transform.angle += (float)(mouseDelta.X * MouseSpeed * time.ElapsedGameTime.TotalSeconds);
 
             double angleRad = transform.angle * Math.PI / 180;

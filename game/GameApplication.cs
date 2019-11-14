@@ -6,7 +6,6 @@ using game.ECS.Resource;
 using game.ECS.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nez;
 
 namespace game
 {
@@ -36,7 +35,7 @@ namespace game
             ecsContext.Subscribe(this);
             
             updateSystems = new SequentialSystem<GameTime>(
-                new ActionSystem<GameTime>(Input.Update),
+                new ActionSystem<GameTime>(Input.Input.Update),
                 new PlayerControllerSystem(ecsContext)
             );
 

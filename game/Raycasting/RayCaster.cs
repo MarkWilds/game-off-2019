@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace game
+namespace game.Raycasting
 {
     public class RayCaster
     {

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
-namespace game
+namespace game.Raycasting
 {
     public class RaycastRenderer
     {

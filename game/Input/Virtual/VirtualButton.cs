@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-
-namespace Nez
+namespace game.Input.Virtual
 {
 	/// <summary>
 	/// A virtual input that is represented as a boolean. As well as simply checking the current button state, you can ask whether

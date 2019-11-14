@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Nez
+namespace game.Input.Virtual
 {
 	/// <summary>
 	/// Represents a virtual button, axis or joystick whose state is determined by the state of its VirtualInputNodes

@@ -2,8 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-
-namespace Nez
+namespace game.Input.Virtual
 {
 	/// <summary>
 	/// A virtual input represented as a float between -1 and 1
