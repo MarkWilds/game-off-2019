@@ -1,10 +1,9 @@
 using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;
-using game.Components;
-using game.Resource;
-using game.Resource.Resources;
-using game.Systems;
+using game.ECS.Components;
+using game.ECS.Resource;
+using game.ECS.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;

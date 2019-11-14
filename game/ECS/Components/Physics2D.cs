@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace game.Components
+namespace game.ECS.Components
 {
     public struct Physics2D
     {

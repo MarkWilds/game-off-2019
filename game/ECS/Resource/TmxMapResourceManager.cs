@@ -2,12 +2,11 @@
 using System.IO;
 using DefaultEcs;
 using DefaultEcs.Resource;
-using game.Components;
-using game.Resource.Resources;
+using game.ECS.Components;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
-namespace game.Resource
+namespace game.ECS.Resource
 {
     public class TmxMapResourceManager : AResourceManager<string, DisposableTmxMap>
     {

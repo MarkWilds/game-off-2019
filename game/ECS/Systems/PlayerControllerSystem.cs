@@ -1,7 +1,7 @@
 ﻿using System;
 using DefaultEcs;
 using DefaultEcs.System;
-using game.Components;
+using game.ECS.Components;
 using Humper;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Nez;
 using World = DefaultEcs.World;
 
-namespace game.Systems
+namespace game.ECS.Systems
 {
     [With(typeof(Transform2D), typeof(Physics2D), typeof(Camera))]
     public class PlayerControllerSystem : AEntitySystem<GameTime>

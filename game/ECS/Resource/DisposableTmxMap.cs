@@ -1,7 +1,7 @@
 ﻿using System;
 using TiledSharp;
 
-namespace game.Resource.Resources
+namespace game.ECS.Resource
 {
     public class DisposableTmxMap : IDisposable
     {

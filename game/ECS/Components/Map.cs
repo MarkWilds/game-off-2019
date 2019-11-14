@@ -3,7 +3,7 @@ using Humper;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
-namespace game.Components
+namespace game.ECS.Components
 {
     public struct Map
     {

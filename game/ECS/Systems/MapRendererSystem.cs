@@ -1,10 +1,10 @@
 ﻿using DefaultEcs;
 using DefaultEcs.System;
-using game.Components;
+using game.ECS.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace game.Systems
+namespace game.ECS.Systems
 {
     [With(typeof(Map))]
     public class MapRendererSystem : AEntitySystem<GameTime>
