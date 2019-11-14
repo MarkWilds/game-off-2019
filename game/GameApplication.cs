@@ -1,3 +1,4 @@
+using System;
 using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;
@@ -40,12 +41,18 @@ namespace game
             );
 
             var preferedSourceRectangle = GetPreferedScreenSizeRectangle(320, 240);
-            drawSystems = new MapRendererSystem(320, 240, spriteBatch, 
-                preferedSourceRectangle, ecsContext);
+            drawSystems =  new RenderTargetRenderer(320, 240, preferedSourceRectangle, spriteBatch,
+                new SequentialSystem<GameTime>(
+                    new SkyRendererSystem(ecsContext, spriteBatch, 320, 240), 
+                    new MapRendererSystem(320, 240, spriteBatch, ecsContext)
+                    )
+                );
 
             var mapEntity = ecsContext.CreateEntity();
             mapEntity.Set<Map>();
+            mapEntity.Set<Texture2DDictionary>();
             mapEntity.Set(new ManagedResource<string, DisposableTmxMap>(@"Content/maps/test_fps.tmx"));
+            mapEntity.Set(new ManagedResource<string, Texture2D>(@"Sprites/sky"));
 
             player = ecsContext.CreateEntity();
             player.Set<Transform2D>();
@@ -55,6 +62,9 @@ namespace game
             var tmxResourceManager = new TmxMapResourceManager(ecsContext, GraphicsDevice,
                 @"Content/Tilesets");
             tmxResourceManager.Manage(ecsContext);
+            
+            var texture2DResourceManager = new Texture2DResourceManager(Content);
+            texture2DResourceManager.Manage(ecsContext);
         }
 
         protected override void Update(GameTime gameTime)

@@ -10,8 +10,8 @@ namespace game.Raycasting
 {
     public class RaycastRenderer
     {
-        private Texture2D blankTexture;
-        private float[] zBuffer;
+        private readonly Texture2D blankTexture;
+        private readonly float[] zBuffer;
         private const int ShadeFactor = 160;
 
         private readonly int width;
@@ -56,8 +56,8 @@ namespace game.Raycasting
             float beginAngle = cameraAngle - halfFov;
 
             // draw ceiling and floor
-            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2 - camera.bobFactor),
-                Color.FromNonPremultiplied(23, 14, 8, 255));
+//            spriteBatch.Draw(blankTexture, new Rectangle(0, 0, width, height / 2 - camera.bobFactor),
+//                Color.CornflowerBlue);
             spriteBatch.Draw(blankTexture, new Rectangle(0, height / 2 -camera.bobFactor, width, height / 2 + camera.bobFactor),
                 Color.Black);
 

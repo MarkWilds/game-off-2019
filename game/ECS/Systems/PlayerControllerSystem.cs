@@ -14,9 +14,9 @@ namespace game.ECS.Systems
     [With(typeof(Transform2D), typeof(Physics2D), typeof(Camera))]
     public class PlayerControllerSystem : AEntitySystem<GameTime>
     {
-        private const float MouseSpeed = 40.0f;
+        private const float MouseSpeed = 20.0f;
         private double bobTimer;
-        private int bobSpeed = 18;
+        private int bobSpeed = 12;
         private float bobOffset = 2f;
         
         private const float dragFactor = 0.1f;
