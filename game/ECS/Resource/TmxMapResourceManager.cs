@@ -3,6 +3,7 @@ using System.IO;
 using DefaultEcs;
 using DefaultEcs.Resource;
 using game.ECS.Components;
+using game.ECS.Events;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
 
@@ -29,6 +30,11 @@ namespace game.ECS.Resource
 
         protected override void OnResourceLoaded(in Entity entity, string info, DisposableTmxMap resource)
         {
+            if(!entity.Has<Map>())
+                entity.Set<Map>();
+
+            entity.Set<Texture2DResources>();
+            
             ref var map = ref entity.Get<Map>();
             map.Data = resource.TmxMap;
             map.Textures = new Dictionary<TmxTileset, Texture2D>();
@@ -50,7 +56,7 @@ namespace game.ECS.Resource
                 }
             }
             
-            ecsContext.Publish(entity);
+            ecsContext.Publish(new MapLoadedEvent(){entity = entity});
         }
 
         private void CreateColliders(Map map, string collisionLayer = "collision")

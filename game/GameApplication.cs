@@ -4,6 +4,7 @@ using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.ECS.Events;
 using game.ECS.Resource;
 using game.ECS.Systems;
 using Microsoft.Xna.Framework;
@@ -17,6 +18,8 @@ namespace game
         private World ecsContext;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
+        private const int VirtualScreenWidth = 320;
+        private const int VirtualScreenHeight = 240;
 
         public GameApplication()
         {
@@ -40,12 +43,11 @@ namespace game
                 new ActionSystem<GameTime>(Input.Input.Update),
                 new PlayerControllerSystem(ecsContext)
             );
-
-            var preferedSourceRectangle = GetPreferedScreenSizeRectangle(320, 240);
-            drawSystems =  new RenderTargetRenderer(320, 240, preferedSourceRectangle, spriteBatch,
+            
+            drawSystems =  new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, Window, spriteBatch,
                 new SequentialSystem<GameTime>(
-                    new SkyRendererSystem(ecsContext, spriteBatch, 320, 240), 
-                    new MapRendererSystem(320, 240, spriteBatch, ecsContext)
+                    new SkyRendererSystem(ecsContext, spriteBatch, VirtualScreenWidth, VirtualScreenHeight), 
+                    new MapRendererSystem(VirtualScreenWidth, VirtualScreenHeight, spriteBatch, ecsContext)
                     )
                 );
             
@@ -54,8 +56,6 @@ namespace game
             new Texture2DResourceManager(Content).Manage(ecsContext);
 
             var mapEntity = ecsContext.CreateEntity();
-            mapEntity.Set<Map>();
-            mapEntity.Set<Texture2DResources>();
             mapEntity.Set(new ManagedResource<string, DisposableTmxMap>(@"Content/maps/test_fps.tmx"));
         }
 
@@ -70,8 +70,9 @@ namespace game
         }
 
         [Subscribe]
-        private void OnMapLoaded(in Entity mapEntity)
+        private void OnMapLoaded(in MapLoadedEvent @event)
         {
+            var mapEntity = @event.entity;
             var map = mapEntity.Get<Map>();
             var darknessFactor = Int32.Parse(map.Data.Properties["darknessFactor"]);
             
@@ -98,27 +99,6 @@ namespace game
             transform.position.X = collider.Bounds.Center.X;
             transform.position.Y = collider.Bounds.Center.Y;
             transform.orientation = Int32.Parse(spawn.Properties["orientation"]);
-        }
-
-        private Rectangle GetPreferedScreenSizeRectangle(int width, int height)
-        {
-            var windowWidth = Window.ClientBounds.Width;
-            var windowHeight = Window.ClientBounds.Height;
-            float outputAspect = windowWidth / (float)windowHeight;
-            float preferredAspect = width / (float)height;
-            
-            if (outputAspect <= preferredAspect)
-            {
-                // output is taller than it is wider, bars on top/bottom
-                int presentHeight = (int)((windowWidth / preferredAspect) + 0.5f);
-                int barHeight = (windowHeight - presentHeight) / 2;
-                return new Rectangle(0, barHeight, windowWidth, presentHeight);
-            }
-
-            // output is wider than it is tall, bars left/right
-            int presentWidth = (int)((windowHeight * preferredAspect) + 0.5f);
-            int barWidth = (windowWidth - presentWidth) / 2;
-            return new Rectangle(barWidth, 0, presentWidth, windowHeight);
         }
     }
 }
