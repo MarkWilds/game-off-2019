@@ -5,6 +5,6 @@ namespace game.ECS.Components
     public struct Transform2D
     {
         public Vector2 position;
-        public float angle;
+        public float orientation;
     }
 }

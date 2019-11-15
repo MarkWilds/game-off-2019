@@ -44,10 +44,10 @@ namespace game.ECS.Systems
 
             renderer.ClearDepthBuffer();
             
-            renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.angle,
+            renderer.RenderMap(spriteBatch, mapData, cameraTransform.position, cameraTransform.orientation,
                 cellSize, "walls1", in cameraData);
             renderer.RenderProps(mapData, spriteBatch, cellSize, cameraTransform.position,
-                cameraTransform.angle, in cameraData);
+                cameraTransform.orientation, in cameraData);
 
             spriteBatch.End();
         }

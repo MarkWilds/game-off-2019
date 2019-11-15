@@ -47,24 +47,21 @@ namespace game
                     new MapRendererSystem(320, 240, spriteBatch, ecsContext)
                     )
                 );
-
+            
             var mapEntity = ecsContext.CreateEntity();
             mapEntity.Set<Map>();
-            mapEntity.Set<Texture2DDictionary>();
+            mapEntity.Set<Texture2DResources>();
             mapEntity.Set(new ManagedResource<string, DisposableTmxMap>(@"Content/maps/test_fps.tmx"));
-            mapEntity.Set(new ManagedResource<string, Texture2D>(@"Sprites/sky"));
+            mapEntity.Set(new ManagedResource<string[], Texture2D>(new []{@"Sprites/sky", @"Sprites/clouds"}));
 
             player = ecsContext.CreateEntity();
             player.Set<Transform2D>();
             player.Set(new Camera() {fov = 60.0f});
             player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
 
-            var tmxResourceManager = new TmxMapResourceManager(ecsContext, GraphicsDevice,
-                @"Content/Tilesets");
-            tmxResourceManager.Manage(ecsContext);
-            
-            var texture2DResourceManager = new Texture2DResourceManager(Content);
-            texture2DResourceManager.Manage(ecsContext);
+            new TmxMapResourceManager(ecsContext, GraphicsDevice,
+                @"Content/Tilesets").Manage(ecsContext);
+            new Texture2DResourceManager(Content).Manage(ecsContext);
         }
 
         protected override void Update(GameTime gameTime)

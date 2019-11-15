@@ -23,7 +23,7 @@ namespace game.ECS.Resource
 
         protected override void OnResourceLoaded(in Entity entity, string info, Texture2D resource)
         {
-            ref var texture2DList = ref entity.Get<Texture2DDictionary>();
+            ref var texture2DList = ref entity.Get<Texture2DResources>();
             if (texture2DList.textures == null)
                 texture2DList.textures = new Dictionary<string, Texture2D>();
             

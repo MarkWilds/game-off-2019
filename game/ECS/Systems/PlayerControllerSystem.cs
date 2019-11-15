@@ -42,9 +42,9 @@ namespace game.ECS.Systems
             
             bobTimer += time.ElapsedGameTime.TotalSeconds * bobSpeed;
             var mouseDelta = Input.Input.MousePositionDelta;
-            transform.angle += (float)(mouseDelta.X * MouseSpeed * time.ElapsedGameTime.TotalSeconds);
+            transform.orientation += (float)(mouseDelta.X * MouseSpeed * time.ElapsedGameTime.TotalSeconds);
 
-            double angleRad = transform.angle * Math.PI / 180;
+            double angleRad = transform.orientation * Math.PI / 180;
             Vector2 forward = new Vector2((float) Math.Cos(angleRad),(float) Math.Sin(angleRad));
             Vector2 right = new Vector2(-forward.Y, forward.X);
 
