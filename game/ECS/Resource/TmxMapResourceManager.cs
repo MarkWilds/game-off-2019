@@ -50,7 +50,7 @@ namespace game.ECS.Resource
                 }
             }
             
-            ecsContext.Publish(map);
+            ecsContext.Publish(entity);
         }
 
         private void CreateColliders(Map map, string collisionLayer = "collision")

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;
@@ -7,6 +8,7 @@ using game.ECS.Resource;
 using game.ECS.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using TiledSharp;
 
 namespace game
 {
@@ -15,7 +17,6 @@ namespace game
         private World ecsContext;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
-        private Entity player;
 
         public GameApplication()
         {
@@ -48,20 +49,14 @@ namespace game
                     )
                 );
             
+            new TmxMapResourceManager(ecsContext, GraphicsDevice,
+                @"Content/Tilesets").Manage(ecsContext);
+            new Texture2DResourceManager(Content).Manage(ecsContext);
+
             var mapEntity = ecsContext.CreateEntity();
             mapEntity.Set<Map>();
             mapEntity.Set<Texture2DResources>();
             mapEntity.Set(new ManagedResource<string, DisposableTmxMap>(@"Content/maps/test_fps.tmx"));
-            mapEntity.Set(new ManagedResource<string[], Texture2D>(new []{@"Sprites/sky", @"Sprites/clouds"}));
-
-            player = ecsContext.CreateEntity();
-            player.Set<Transform2D>();
-            player.Set(new Camera() {fov = 60.0f});
-            player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
-
-            new TmxMapResourceManager(ecsContext, GraphicsDevice,
-                @"Content/Tilesets").Manage(ecsContext);
-            new Texture2DResourceManager(Content).Manage(ecsContext);
         }
 
         protected override void Update(GameTime gameTime)
@@ -73,7 +68,38 @@ namespace game
         {
             drawSystems.Update(gameTime);
         }
-        
+
+        [Subscribe]
+        private void OnMapLoaded(in Entity mapEntity)
+        {
+            var map = mapEntity.Get<Map>();
+            var darknessFactor = Int32.Parse(map.Data.Properties["darknessFactor"]);
+            
+            mapEntity.Set(new ManagedResource<string[], Texture2D>(new []{@"Sprites/sky", @"Sprites/clouds"}));
+            mapEntity.Set(new MapRenderData(){darknessFactor = darknessFactor});
+
+            var objects = map.Data.ObjectGroups["objects"];
+            TmxObject spawn = objects.Objects
+                .Where(o => o.Type == "spawn")
+                .SingleOrDefault(o => o.Name == "spawn01");
+
+            // create player
+            var player = ecsContext.CreateEntity();
+            player.Set<Transform2D>();
+            player.Set(new Camera() {fov = 60.0f});
+            player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
+            
+            var collider = map.physicsWorld.Create((float) spawn.X, (float) spawn.Y,
+                map.Data.TileWidth / 2.0f, map.Data.TileHeight / 2.0f);
+            player.Set(collider);
+
+            // set player data
+            ref var transform = ref player.Get<Transform2D>();
+            transform.position.X = collider.Bounds.Center.X;
+            transform.position.Y = collider.Bounds.Center.Y;
+            transform.orientation = Int32.Parse(spawn.Properties["orientation"]);
+        }
+
         private Rectangle GetPreferedScreenSizeRectangle(int width, int height)
         {
             var windowWidth = Window.ClientBounds.Width;
@@ -93,19 +119,6 @@ namespace game
             int presentWidth = (int)((windowHeight * preferredAspect) + 0.5f);
             int barWidth = (windowWidth - presentWidth) / 2;
             return new Rectangle(barWidth, 0, presentWidth, windowHeight);
-        }
-
-        [Subscribe]
-        private void OnMapLoaded(in Map map)
-        {
-            var collider = map.physicsWorld.Create(40, 72,
-                map.Data.TileWidth / 2, map.Data.TileHeight / 2);
-            player.Set(collider);
-
-            // set player start position
-            ref var transform = ref player.Get<Transform2D>();
-            transform.position.X = collider.Bounds.Center.X;
-            transform.position.Y = collider.Bounds.Center.Y;
         }
     }
 }
