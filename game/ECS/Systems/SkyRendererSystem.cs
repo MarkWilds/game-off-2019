@@ -1,5 +1,4 @@
-﻿using System;
-using DefaultEcs;
+﻿using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
 using Microsoft.Xna.Framework;
@@ -7,17 +6,19 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace game.ECS.Systems
 {
-    [With(typeof(Texture2DResources))]
     [With(typeof(Map))]
+    [With(typeof(MapRenderData))]
     public class SkyRendererSystem : AEntitySystem<GameTime>
     {
         private readonly SpriteBatch spriteBatch;
         private readonly EntitySet cameraEntitySet;
         private readonly Rectangle destination;
 
+        private readonly Texture2D blankTexture;
+
         private Rectangle skySource;
         private Rectangle cloudsSource;
-        
+
         private const int CloudDirection = -1;
         private const int CloudSpeedMultiplier = 2;
 
@@ -31,15 +32,46 @@ namespace game.ECS.Systems
 
             skySource = new Rectangle();
             cloudsSource = new Rectangle();
-            destination = new Rectangle(0,0, width, height / 2);
+            
+            blankTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
+            blankTexture.SetData(new []{Color.White}, 0, 1);
+            destination = new Rectangle(0, 0, width, height / 2);
         }
 
         protected override void Update(GameTime state, in Entity entity)
         {
+            ref var mapRenderData = ref entity.Get<MapRenderData>();
+            switch (mapRenderData.skyType)
+            {
+                case SkyType.clouds:
+                    if (!entity.Has<Texture2DResources>())
+                        return;
+                    
+                    DrawClouds(state, in entity);
+                    break;
+                case SkyType.solid:
+                    DrawSolid(state, in entity);
+                    break;
+            }
+        }
+
+        private void DrawSolid(GameTime state, in Entity entity)
+        {
+            ref var mapRenderData = ref entity.Get<MapRenderData>();
+            
+            spriteBatch.Begin();
+
+            spriteBatch.Draw(blankTexture, destination, mapRenderData.skyColor);
+            
+            spriteBatch.End();
+        }
+
+        private void DrawClouds(GameTime state, in Entity entity)
+        {
             ref var texture2DDictionary = ref entity.Get<Texture2DResources>();
             var sky = texture2DDictionary.textures["Sprites/sky"];
             var clouds = texture2DDictionary.textures["Sprites/clouds"];
-            
+
             var player = cameraEntitySet.GetEntities()[0];
             var transform = player.Get<Transform2D>();
 
@@ -53,22 +85,24 @@ namespace game.ECS.Systems
 
             spriteBatch.Draw(sky, destination, skySource, Color.White);
 
-            double cloudMovingOffset = (state.TotalGameTime.TotalSeconds * CloudDirection * CloudSpeedMultiplier / 2)  % clouds.Width;
+            double cloudMovingOffset = (state.TotalGameTime.TotalSeconds * CloudDirection * CloudSpeedMultiplier / 2) %
+                                       clouds.Width;
 
             cloudsSource.Y = 0;
             cloudsSource.X = (int) (orientationOffset * clouds.Width + cloudMovingOffset);
             cloudsSource.Width = clouds.Width;
             cloudsSource.Height = clouds.Height;
             spriteBatch.Draw(clouds, destination, cloudsSource, Color.White);
-            
-            cloudMovingOffset = (state.TotalGameTime.TotalSeconds * CloudDirection * CloudSpeedMultiplier)  % clouds.Width;
+
+            cloudMovingOffset = (state.TotalGameTime.TotalSeconds * CloudDirection * CloudSpeedMultiplier) %
+                                clouds.Width;
 
             cloudsSource.Y -= 96;
             cloudsSource.X = (int) (orientationOffset * clouds.Width + cloudMovingOffset +
                                     CloudDirection * clouds.Width / 2.0);
 
             spriteBatch.Draw(clouds, destination, cloudsSource, Color.White);
-            
+
             spriteBatch.End();
         }
     }

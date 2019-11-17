@@ -6,8 +6,9 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="DefaultEcs" Version="0.12.2" />
+    <PackageReference Include="DefaultEcs" Version="0.12.1" />
     <PackageReference Include="Humper" Version="0.5.8" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
     <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.0.1708" />
     <PackageReference Include="TiledSharp" Version="1.0.1" />
   </ItemGroup>

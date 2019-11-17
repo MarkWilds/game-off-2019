@@ -195,7 +195,6 @@ namespace game.ECS.Systems
                 if (tileset == null)
                     continue;
 
-
                 Texture2D propTexture = map.Textures[tileset];
                 Vector2 spritePosition = new Vector2(propTile.X * cellSize + halfCellSize,
                     propTile.Y * cellSize + halfCellSize);

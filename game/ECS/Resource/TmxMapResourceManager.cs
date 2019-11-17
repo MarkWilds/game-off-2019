@@ -9,39 +9,38 @@ using TiledSharp;
 
 namespace game.ECS.Resource
 {
-    public class TmxMapResourceManager : AResourceManager<string, DisposableTmxMap>
+    public class TmxMapResourceManager : AResourceManager<MapInfo, DisposableDummy<TmxMap>>
     {
         private readonly GraphicsDevice graphicsDevice;
-        private readonly string tilesetsPath;
         private readonly World ecsContext;
+        private readonly string tilesetsPath;
 
-        public TmxMapResourceManager(World context, GraphicsDevice graphicsDevice, string tilesetPath)
+        private readonly string mapPath;
+
+        public TmxMapResourceManager(World context, GraphicsDevice graphicsDevice, string tilesetPath, string mapPath)
         {
             this.ecsContext = context;
             this.graphicsDevice = graphicsDevice;
             this.tilesetsPath = tilesetPath;
+            this.mapPath = mapPath;
         }
 
-        protected override DisposableTmxMap Load(string file)
+        protected override DisposableDummy<TmxMap> Load(MapInfo info)
         {
-            var tmxMap = new TmxMap(file);
-            return new DisposableTmxMap() {TmxMap = tmxMap};
+            var relativePathToMapFile = Path.Combine(mapPath, $"{info.mapName}.tmx");
+            return new DisposableDummy<TmxMap>(new TmxMap(relativePathToMapFile));
         }
 
-        protected override void OnResourceLoaded(in Entity entity, string info, DisposableTmxMap resource)
+        protected override void OnResourceLoaded(in Entity entity, MapInfo info, DisposableDummy<TmxMap> resource)
         {
             if(!entity.Has<Map>())
                 entity.Set<Map>();
 
-            entity.Set<Texture2DResources>();
-            
             ref var map = ref entity.Get<Map>();
-            map.Data = resource.TmxMap;
+            map.Data = resource.Data;
             map.Textures = new Dictionary<TmxTileset, Texture2D>();
             map.physicsWorld = new Humper.World(map.Data.Width * map.Data.TileWidth, 
                 map.Data.Height * map.Data.TileHeight);
-
-            CreateColliders(map);
 
             foreach (TmxTileset tileset in map.Data.Tilesets)
             {
@@ -56,19 +55,7 @@ namespace game.ECS.Resource
                 }
             }
             
-            ecsContext.Publish(new MapLoadedEvent(){entity = entity});
-        }
-
-        private void CreateColliders(Map map, string collisionLayer = "collision")
-        {
-            var data = map.Data;
-            TmxObjectGroup objects = data.ObjectGroups[collisionLayer];
-
-            foreach (var tmxObject in objects.Objects)
-            {
-                map.physicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
-                    (float)tmxObject.Width, (float)tmxObject.Height);
-            }
+            ecsContext.Publish(new MapLoadedEvent(){entity = entity, startingSpawn = info.spawnName});
         }
     }
 }

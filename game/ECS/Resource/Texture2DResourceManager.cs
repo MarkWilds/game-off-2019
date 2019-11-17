@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace game.ECS.Resource
 {
-    public class Texture2DResourceManager : AResourceManager<string, Texture2D>
+    public class Texture2DResourceManager : AResourceManager<string, DisposableDummy<Texture2D>>
     {
         private readonly ContentManager contentManager;
         
@@ -16,18 +16,18 @@ namespace game.ECS.Resource
             this.contentManager = contentManager;
         }
 
-        protected override Texture2D Load(string info)
+        protected override DisposableDummy<Texture2D> Load(string info)
         {
-            return contentManager.Load<Texture2D>(info);
+            return new DisposableDummy<Texture2D>(contentManager.Load<Texture2D>(info));
         }
 
-        protected override void OnResourceLoaded(in Entity entity, string info, Texture2D resource)
+        protected override void OnResourceLoaded(in Entity entity, string info, DisposableDummy<Texture2D> resource)
         {
             ref var texture2DList = ref entity.Get<Texture2DResources>();
             if (texture2DList.textures == null)
                 texture2DList.textures = new Dictionary<string, Texture2D>();
             
-            texture2DList.textures[info] = resource;
+            texture2DList.textures[info] = resource.Data;
         }
     }
 }

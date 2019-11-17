@@ -2,6 +2,7 @@
 using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.ECS.Events;
 using game.Input.Virtual;
 using Humper;
 using Humper.Responses;
@@ -24,8 +25,11 @@ namespace game.ECS.Systems
         private readonly VirtualIntegerAxis horizontalAxis;
         private readonly VirtualIntegerAxis verticalAxis;
 
+        private readonly World ecsContext;
+
         public PlayerControllerSystem(World world) : base(world)
         {
+            ecsContext = world;
             horizontalAxis = new VirtualIntegerAxis();
             horizontalAxis.AddKeyboardKeys(VirtualInput.OverlapBehavior.CancelOut, Keys.A, Keys.D);
             
@@ -77,8 +81,22 @@ namespace game.ECS.Systems
             camera.bobFactor = (int) (Math.Sin(bobTimer - Math.PI) * speedFactor * bobOffset);
 
             // do collision handling and resolve
-            collider.Move(collider.X + physics2D.velocity.X, collider.Y + physics2D.velocity.Y, 
-                collision => CollisionResponses.Slide);
+            collider.Move(collider.X + physics2D.velocity.X, collider.Y + physics2D.velocity.Y,
+                collision =>
+                {
+                    if (collision.Other.Data is TriggerInfo trigger)
+                    {
+                        if (trigger.type == "teleport")
+                        {
+                            var teleportData = trigger.data;
+                            var mapInfo = new MapInfo() {mapName = teleportData.map, spawnName = teleportData.spawn};
+                            ecsContext.Publish(new MapLoadEvent(){mapInfo = mapInfo});
+                            return CollisionResponses.Cross;
+                        }  
+                    }
+
+                    return CollisionResponses.Slide;
+                });
 
             transform.position.X = collider.Bounds.Center.X;
             transform.position.Y = collider.Bounds.Center.Y;
