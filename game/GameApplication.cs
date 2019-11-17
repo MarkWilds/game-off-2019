@@ -16,13 +16,17 @@ namespace game
     public class GameApplication : Game
     {
         private World ecsContext;
+        private Entity currentMapEntity;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
+        
         private const int VirtualScreenWidth = 320;
         private const int VirtualScreenHeight = 240;
 
-        private Entity currentMapEntity;
+        private const string MapsPathFolder = @"Content/maps";
+        private const string TilesetsPathFolder = @"Content/Tilesets";
         private const string StartingMapName = @"hub";
+        private const string StartingSpawnName = @"spawn01";
 
         public GameApplication()
         {
@@ -54,11 +58,11 @@ namespace game
                     )
                 );
             
-            new TmxMapResourceManager(ecsContext, GraphicsDevice,@"Content/Tilesets",  
-                @"Content/maps").Manage(ecsContext);
+            new TmxMapResourceManager(ecsContext, GraphicsDevice,TilesetsPathFolder,  
+                MapsPathFolder).Manage(ecsContext);
             new Texture2DResourceManager(Content).Manage(ecsContext);
 
-            var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = "spawn01"};
+            var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = StartingSpawnName};
             ecsContext.Publish(new MapLoadEvent(){mapInfo = mapInfo});
         }
 
