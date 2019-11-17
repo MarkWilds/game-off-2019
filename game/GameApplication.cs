@@ -110,7 +110,7 @@ namespace game
                         break;
                 }
             }
-            mapEntity.Set(mapRenderData);
+            mapEntity.Set(in mapRenderData);
 
             var objects = map.Data.ObjectGroups["objects"];
             var spawnName = @event.startingSpawn;
@@ -118,13 +118,20 @@ namespace game
                 .Where(o => o.Type == "spawn")
                 .SingleOrDefault(o => o.Name == spawnName);
 
-            // create player
+            var playerOrientation = Int32.Parse(spawn.Properties["orientation"]);
+
+            Entity player = CreatePlayer(in map, (int) spawn.X, (int) spawn.Y, playerOrientation);
+            mapEntity.SetAsParentOf(in player);
+        }
+
+        private Entity CreatePlayer(in Map map, int x, int y, int orientation)
+        {
             var player = ecsContext.CreateEntity();
             player.Set<Transform2D>();
             player.Set(new Camera() {fov = 60.0f});
             player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
             
-            var collider = map.physicsWorld.Create((float) spawn.X, (float) spawn.Y,
+            var collider = map.physicsWorld.Create(x, y,
                 map.Data.TileWidth / 2.0f, map.Data.TileHeight / 2.0f);
             player.Set(collider);
 
@@ -132,9 +139,9 @@ namespace game
             ref var transform = ref player.Get<Transform2D>();
             transform.position.X = collider.Bounds.Center.X;
             transform.position.Y = collider.Bounds.Center.Y;
-            transform.orientation = Int32.Parse(spawn.Properties["orientation"]);
-            
-            mapEntity.SetAsParentOf(player);
+            transform.orientation = orientation;
+
+            return player;
         }
         
         private void CreateColliders(Map map, string collisionLayer = "collision")
