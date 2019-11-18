@@ -78,7 +78,7 @@ namespace game.ECS.Systems
             }
 
             var speedFactor = physics2D.velocity.Length() / physics2D.maxSpeed;
-            camera.bobFactor = (int) (Math.Sin(bobTimer - Math.PI) * speedFactor * bobOffset);
+            camera.bobFactor = (float) (Math.Sin(bobTimer - Math.PI) * speedFactor * bobOffset);
 
             // do collision handling and resolve
             collider.Move(collider.X + physics2D.velocity.X, collider.Y + physics2D.velocity.Y,

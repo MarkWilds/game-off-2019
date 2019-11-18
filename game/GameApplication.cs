@@ -21,7 +21,7 @@ namespace game
         private ISystem<GameTime> drawSystems;
         
         private const int VirtualScreenWidth = 320;
-        private const int VirtualScreenHeight = 240;
+        private const int VirtualScreenHeight = 180;
 
         private const string MapsPathFolder = @"Content/maps";
         private const string TilesetsPathFolder = @"Content/Tilesets";
@@ -33,8 +33,7 @@ namespace game
             IsFixedTimeStep = true;
             new GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = 1024, PreferredBackBufferHeight = 768,
-//                IsFullScreen = true
+                PreferredBackBufferWidth = 1280, PreferredBackBufferHeight = 720,
             };
             Content.RootDirectory = "Content";
         }

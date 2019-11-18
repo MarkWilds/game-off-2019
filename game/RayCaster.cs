@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace game.Raycasting
+namespace game
 {
     public class RayCaster
     {
@@ -14,7 +14,7 @@ namespace game.Raycasting
         }
 
         public static bool RayIntersectsGrid(Vector2 position, float angle, int cellSize,
-            out HitData hitData, Func<HitData, bool> isSolid, float maxViewDistance = 1024)
+            ref HitData hitData, Predicate<HitData> isSolid, float maxViewDistance = 1024)
         {
             float cos = (float) Math.Cos(angle);
             float sin = (float) Math.Sin(angle);
@@ -36,8 +36,8 @@ namespace game.Raycasting
             // needs to be positive always
             float deltaVertical = Math.Abs(cellSize / cos);
             float deltaHorizontal = Math.Abs(cellSize / sin);
-
-            hitData = new HitData {normal = new Vector2(cos, sin), rayLength = 0.0f, tileCoordinates = tileCoords};
+            
+            hitData.tileCoordinates = tileCoords;
             while (hitData.rayLength < maxViewDistance)
             {
                 if (isSolid.Invoke(hitData))
