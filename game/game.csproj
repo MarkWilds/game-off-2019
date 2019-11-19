@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>    
-    <TargetFramework>netstandard2.0</TargetFramework>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>    
     <NoWarn>1701</NoWarn>
   </PropertyGroup>
   
@@ -9,12 +10,12 @@
     <PackageReference Include="DefaultEcs" Version="0.12.1" />
     <PackageReference Include="Humper" Version="0.5.8" />
     <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
-    <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.0.1708" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL.Core" Version="3.7.0.7" />
     <PackageReference Include="TiledSharp" Version="1.0.1" />
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Input" />
+    <ProjectReference Include="..\content\content.csproj" />
   </ItemGroup>
   
 </Project>

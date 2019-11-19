@@ -18,7 +18,7 @@ namespace game.ECS.Systems
         private const float MouseSpeed = 20.0f;
         private double bobTimer;
         private int bobSpeed = 12;
-        private float bobOffset = 2f;
+        private float bobOffset = 1.5f;
         
         private const float dragFactor = 0.1f;
 

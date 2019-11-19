@@ -27,6 +27,12 @@ namespace game
         private const string TilesetsPathFolder = @"Content/Tilesets";
         private const string StartingMapName = @"hub";
         private const string StartingSpawnName = @"spawn01";
+        
+        static void Main()
+        {
+            using var game = new GameApplication();
+            game.Run();
+        }
 
         public GameApplication()
         {
