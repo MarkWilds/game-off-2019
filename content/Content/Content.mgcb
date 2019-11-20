@@ -32,6 +32,24 @@
 /processorParam:TextureFormat=Color
 /build:blank.png
 
+#begin Music/dungeon01.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/dungeon01.ogg
+
+#begin Music/hub.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/hub.ogg
+
+#begin Music/whackmole.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/whackmole.ogg
+
 #begin Sprites/blunt_weapon.png
 /importer:TextureImporter
 /processor:TextureProcessor

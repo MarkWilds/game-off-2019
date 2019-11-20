@@ -8,7 +8,7 @@ namespace game.Extensions
 {
     public static class WorldExtensions
     {
-        public static Entity CreateWeapon(this World world, int x, int y, string resourceName)
+        public static Entity CreateWeapon(this World world, int x, int y, int vMove, int hMove, string resourceName)
         {
             var weapon = world.CreateEntity();
             weapon.Set<Texture2DResources>();
@@ -17,8 +17,8 @@ namespace game.Extensions
             weapon.Set( new ScreenWeapon()
             {
                 resourceName = resourceName,
-                horizontalMoveFactor = 3,
-                verticalMoveFactor = 1
+                horizontalMoveFactor = hMove,
+                verticalMoveFactor = vMove
             });
             
             ref var transform = ref weapon.Get<Transform2D>();
@@ -32,11 +32,11 @@ namespace game.Extensions
         {
             var player = world.CreateEntity();
             player.Set<Transform2D>();
-            player.Set(new Camera() {fov = 60.0f});
+            player.Set(new Camera() {fov = 60.0f, pitch = 0});
             player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
             
             var collider = map.physicsWorld.Create(x, y,
-                map.Data.TileWidth / 2.0f, map.Data.TileHeight / 2.0f);
+                map.Data.TileWidth / 1.5f, map.Data.TileHeight / 1.5f);
             player.Set(collider);
 
             // set player data

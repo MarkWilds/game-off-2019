@@ -4,5 +4,6 @@
     {
         public float fov;
         public float bobFactor;
+        public int pitch;
     }
 }

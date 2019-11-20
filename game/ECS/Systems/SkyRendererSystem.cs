@@ -12,10 +12,12 @@ namespace game.ECS.Systems
     {
         private readonly SpriteBatch spriteBatch;
         private readonly EntitySet cameraEntitySet;
-        private readonly Rectangle destination;
 
         private readonly Texture2D blankTexture;
 
+        private readonly int startHeight;
+
+        private Rectangle destination;
         private Rectangle skySource;
         private Rectangle cloudsSource;
 
@@ -35,7 +37,9 @@ namespace game.ECS.Systems
             
             blankTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
             blankTexture.SetData(new []{Color.White}, 0, 1);
-            destination = new Rectangle(0, 0, width, height / 2);
+
+            startHeight = height / 2;
+            destination = new Rectangle(0, 0, width, startHeight);
         }
 
         protected override void Update(GameTime state, in Entity entity)
@@ -72,8 +76,9 @@ namespace game.ECS.Systems
             var sky = texture2DDictionary.textures["Sprites/sky"];
             var clouds = texture2DDictionary.textures["Sprites/clouds"];
 
-            var player = cameraEntitySet.GetEntities()[0];
-            var transform = player.Get<Transform2D>();
+            var camera = cameraEntitySet.GetEntities()[0];
+            ref var transform = ref camera.Get<Transform2D>();
+            ref var cameraData = ref camera.Get<Camera>();
 
             var orientationOffset = transform.orientation / (180.0 / 3);
 
@@ -83,6 +88,7 @@ namespace game.ECS.Systems
 
             spriteBatch.Begin(samplerState: SamplerState.PointWrap);
 
+            destination.Height = startHeight - cameraData.pitch;
             spriteBatch.Draw(sky, destination, skySource, Color.White);
 
             double cloudMovingOffset = (state.TotalGameTime.TotalSeconds * CloudDirection * CloudSpeedMultiplier / 2) %

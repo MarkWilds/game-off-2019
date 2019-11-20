@@ -75,7 +75,7 @@ namespace game.ECS.Systems
             float focalLength = (float) (screenWidth / 2.0 / Math.Tan(halfFov));
 
             float playerHeight = cellSize / 2.0f + camera.bobFactor;
-            int projectionPlaneCenterHeight = screenHeight / 2;
+            int projectionPlaneCenterHeight = screenHeight / 2 + camera.pitch;
 
             // draw all wallslices
             RayCaster.HitData castData = default;
@@ -273,7 +273,7 @@ namespace game.ECS.Systems
             float playerHeight = cellSize / 2.0f + camera.bobFactor;
             float fov = (float) (camera.fov * Math.PI / 180.0f);
 
-            int projectionPlaneCenterHeight = screenHeight / 2;
+            int projectionPlaneCenterHeight = screenHeight / 2 + camera.pitch;
             int projectionPlaneCenterWidth = screenWidth / 2;
             
             float halfFov = fov / 2;

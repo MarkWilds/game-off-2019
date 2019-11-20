@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using DefaultEcs;
 using DefaultEcs.Resource;
@@ -10,6 +11,7 @@ using game.ECS.Systems;
 using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using TiledSharp;
 
 namespace game
@@ -28,6 +30,8 @@ namespace game
         private const string TilesetsPathFolder = @"Content/Tilesets";
         private const string StartingMapName = @"hub";
         private const string StartingSpawnName = @"spawn01";
+
+        private Dictionary<string, Song> songList;
         
         static void Main()
         {
@@ -43,6 +47,9 @@ namespace game
                 PreferredBackBufferWidth = 1280, PreferredBackBufferHeight = 720,
             };
             Content.RootDirectory = "Content";
+            Window.Title = "Whack a Monster!!!";
+            
+            songList = new Dictionary<string, Song>();
         }
 
         protected override void LoadContent()
@@ -65,10 +72,16 @@ namespace game
                     )
                 );
             
+            // load resources
+            songList.Add("Music/hub", Content.Load<Song>("Music/hub"));
+            songList.Add("Music/dungeon01", Content.Load<Song>("Music/dungeon01"));
+            songList.Add("Music/whackmole", Content.Load<Song>("Music/whackmole"));
+            
             new TmxMapResourceManager(ecsContext, GraphicsDevice,TilesetsPathFolder,  
                 MapsPathFolder).Manage(ecsContext);
             new Texture2DResourceManager(Content).Manage(ecsContext);
 
+            // start loading map
             var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = StartingSpawnName};
             ecsContext.Publish(new MapLoadEvent(){mapInfo = mapInfo});
         }
@@ -81,6 +94,20 @@ namespace game
         protected override void Draw(GameTime gameTime)
         {
             drawSystems.Update(gameTime);
+        }
+
+        [Subscribe]
+        private void OnStopSong(in StopSongEvent @event)
+        {
+            MediaPlayer.Stop();
+        }
+
+        [Subscribe]
+        private void OnPlaySong(in PlaySongEvent @event)
+        {
+            var song = songList[@event.songName];
+            MediaPlayer.IsRepeating = @event.isRepeating;
+            MediaPlayer.Play(song);
         }
         
         [Subscribe]
@@ -134,9 +161,22 @@ namespace game
             Entity player = ecsContext.CreatePlayer(in map, (int) spawn.X, (int) spawn.Y, playerOrientation);
             mapEntity.SetAsParentOf(in player);
 
-            Entity weapon = ecsContext.CreateWeapon(VirtualScreenWidth / 2 + 16, VirtualScreenHeight - 16,
-                "Sprites/blunt_weapon");
+            Entity weapon = ecsContext.CreateWeapon(VirtualScreenWidth / 2 + 64, VirtualScreenHeight - 16,
+                1, 2, "Sprites/blunt_weapon");
             player.SetAsParentOf(in weapon);
+
+            if (map.Data.Properties.ContainsKey("music"))
+            {
+                var mapMusic = map.Data.Properties["music"];
+                PlaySongEvent songEvent = default;
+                songEvent.songName = mapMusic;
+                songEvent.isRepeating = true;
+                ecsContext.Publish(songEvent);
+            }
+            else
+            {
+                ecsContext.Publish(new StopSongEvent());
+            }
         }
 
         private void CreateColliders(Map map, string collisionLayer = "collision")
