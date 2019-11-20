@@ -3,7 +3,10 @@
     public struct Camera
     {
         public float fov;
-        public float bobFactor;
         public int pitch;
+
+        public float bobPeriod;
+        public float bobAmplitude;
+        public float bobFactor;
     }
 }

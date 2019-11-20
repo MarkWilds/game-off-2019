@@ -32,7 +32,7 @@ namespace game.Extensions
         {
             var player = world.CreateEntity();
             player.Set<Transform2D>();
-            player.Set(new Camera() {fov = 60.0f, pitch = 0});
+            player.Set(new Camera() {fov = 60.0f, pitch = 0, bobPeriod = 12f, bobAmplitude = 2f});
             player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
             
             var collider = map.physicsWorld.Create(x, y,

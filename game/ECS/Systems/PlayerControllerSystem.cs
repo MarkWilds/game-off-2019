@@ -17,8 +17,6 @@ namespace game.ECS.Systems
     {
         private const float MouseSpeed = 20.0f;
         private double bobTimer;
-        private float bobPeriod = 12f;
-        private float bobAmplitude = 2f;
 
         private const float dragFactor = 0.1f;
 
@@ -99,7 +97,7 @@ namespace game.ECS.Systems
             transform.position.Y = collider.Bounds.Center.Y;
             
             var speedFactor = physics2D.velocity.Length() / physics2D.maxSpeed;
-            camera.bobFactor = (float) (Math.Sin( bobTimer * bobPeriod ) * bobAmplitude * speedFactor);
+            camera.bobFactor = (float) (Math.Sin( bobTimer * camera.bobPeriod ) * camera.bobAmplitude * speedFactor);
         }
     }
 }
