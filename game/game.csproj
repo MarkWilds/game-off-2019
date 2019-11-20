@@ -17,6 +17,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\content\content.csproj" />
+    <ProjectReference Include="..\gui\gui.csproj" />
   </ItemGroup>
   
 </Project>

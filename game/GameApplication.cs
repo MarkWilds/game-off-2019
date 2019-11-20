@@ -9,10 +9,13 @@ using game.ECS.Events;
 using game.ECS.Resource;
 using game.ECS.Systems;
 using game.Extensions;
+using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using TiledSharp;
+using Vector2 = System.Numerics.Vector2;
 
 namespace game
 {
@@ -22,7 +25,7 @@ namespace game
         private Entity currentMapEntity;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
-        
+
         private const int VirtualScreenWidth = 320;
         private const int VirtualScreenHeight = 180;
 
@@ -32,7 +35,13 @@ namespace game
         private const string StartingSpawnName = @"spawn01";
 
         private Dictionary<string, Song> songList;
-        
+
+        // for debugging
+        private ImGuiRenderer imguiRenderer;
+        private ISystem<GameTime> playerControllerSystem;
+        private bool debug;
+        private EntitySet entitySet;
+
         static void Main()
         {
             using var game = new GameApplication();
@@ -48,52 +57,159 @@ namespace game
             };
             Content.RootDirectory = "Content";
             Window.Title = "Whack a Monster!!!";
-            
+
             songList = new Dictionary<string, Song>();
         }
 
         protected override void LoadContent()
         {
+            imguiRenderer = new ImGuiRenderer(this);
+            imguiRenderer.RebuildFontAtlas();
             var spriteBatch = new SpriteBatch(GraphicsDevice);
 
             ecsContext = new World(1 << 8);
             ecsContext.Subscribe(this);
-            
+
+            playerControllerSystem = new PlayerControllerSystem(ecsContext);
             updateSystems = new SequentialSystem<GameTime>(
                 new ActionSystem<GameTime>(Input.Input.Update),
-                new PlayerControllerSystem(ecsContext)
+                playerControllerSystem
             );
-            
-            drawSystems =  new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, Window, spriteBatch,
+
+            drawSystems = new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, Window, spriteBatch,
                 new SequentialSystem<GameTime>(
-                    new SkyRendererSystem(ecsContext, spriteBatch, VirtualScreenWidth, VirtualScreenHeight), 
+                    new SkyRendererSystem(ecsContext, spriteBatch, VirtualScreenWidth, VirtualScreenHeight),
                     new MapRendererSystem(ecsContext, VirtualScreenWidth, VirtualScreenHeight, spriteBatch),
                     new WeaponScreenRenderer(ecsContext, spriteBatch)
-                    )
-                );
-            
+                )
+            );
+
             // load resources
             songList.Add("Music/hub", Content.Load<Song>("Music/hub"));
             songList.Add("Music/dungeon01", Content.Load<Song>("Music/dungeon01"));
             songList.Add("Music/whackmole", Content.Load<Song>("Music/whackmole"));
-            
-            new TmxMapResourceManager(ecsContext, GraphicsDevice,TilesetsPathFolder,  
+
+            new TmxMapResourceManager(ecsContext, GraphicsDevice, TilesetsPathFolder,
                 MapsPathFolder).Manage(ecsContext);
             new Texture2DResourceManager(Content).Manage(ecsContext);
 
             // start loading map
             var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = StartingSpawnName};
-            ecsContext.Publish(new MapLoadEvent(){mapInfo = mapInfo});
+            ecsContext.Publish(new MapLoadEvent() {mapInfo = mapInfo});
+            
+            // debug
+            entitySet = ecsContext.GetEntities().WithEither<ScreenWeapon, Physics2D, Camera>().Build();
+        }
+
+        private void CheckDebugGUI()
+        {
+            if (Input.Input.IsKeyPressed(Keys.Tab))
+            {
+                playerControllerSystem.IsEnabled = !playerControllerSystem.IsEnabled;
+                IsMouseVisible = !playerControllerSystem.IsEnabled;
+                debug = !playerControllerSystem.IsEnabled;
+            }
         }
 
         protected override void Update(GameTime gameTime)
         {
             updateSystems.Update(gameTime);
+
+            CheckDebugGUI();
+        }
+
+        private void DoGui(GameTime gameTime)
+        {
+            imguiRenderer.BeforeLayout(gameTime);
+
+            ImGuiMainMenuBar(@event =>
+            {
+                if (@event == "quit")
+                    Exit();
+            });
+            
+            ImGui.SetWindowSize(new Vector2(400, 300));
+            ImGui.Begin("DEBUG");
+            
+            foreach (ref readonly var entity in entitySet.GetEntities())
+            {
+                if (entity.Has<Camera>())
+                {
+                    ref var data = ref entity.Get<Camera>();
+                    
+                    ImGui.Text("Camera:");
+                    ImGui.SliderInt("Up/Down head rotation", ref data.pitch, -64, 64);
+                    ImGui.SliderFloat("Field of view", ref data.fov, 30, 90);
+                    ImGui.SliderFloat("Bobbing speed", ref data.bobPeriod, 1, 64);
+                    ImGui.SliderFloat("Bobbing height", ref data.bobAmplitude, 1, 64);
+
+                    if (ImGui.Button("Default##1"))
+                    {
+                        data.fov = 60f;
+                        data.pitch = 0;
+                        data.bobPeriod = 12;
+                        data.bobAmplitude = 2;
+                    }
+                }
+
+                if (entity.Has<ScreenWeapon>())
+                {
+                    ref var data = ref entity.Get<ScreenWeapon>();
+                    ImGui.Text("Weapon:");
+                    ImGui.SliderFloat("Horizontal move factor", ref data.horizontalMoveFactor, 1, 100);
+                    ImGui.SliderFloat("Vertical move factor", ref data.verticalMoveFactor, 1, 100);
+                    
+                    if (ImGui.Button("Default##2"))
+                    {
+                        data.horizontalMoveFactor = 2;
+                        data.verticalMoveFactor = 1;
+                    }
+                }
+                
+                if (entity.Has<Physics2D>())
+                {
+                    ref var data = ref entity.Get<Physics2D>();
+                    ImGui.Text("Physics:");
+                    ImGui.SliderFloat("Acceleration speed", ref data.accelerationSpeed, 1, 100);
+                    ImGui.SliderFloat("Max Speed", ref data.maxSpeed, 1, 100);
+                    
+                    if (ImGui.Button("Default##3"))
+                    {
+                        data.maxSpeed = 2;
+                        data.accelerationSpeed = 24;
+                    }
+                }
+            }
+            
+            ImGui.Text("Maak maar screenshot als het goed zit");
+            ImGui.End();
+
+            
+            imguiRenderer.AfterLayout();
         }
         
+        private void ImGuiMainMenuBar(Action<string> events)
+        {
+            if (ImGui.BeginMainMenuBar())
+            {
+                if (ImGui.BeginMenu("File"))
+                {
+                    if (ImGui.MenuItem("Quit", "ALT+F4"))
+                        events("quit");
+
+                    ImGui.EndMenu();
+                }
+
+                ImGui.EndMainMenuBar();
+            }
+        }
+
         protected override void Draw(GameTime gameTime)
         {
             drawSystems.Update(gameTime);
+            
+            if(debug)
+                DoGui(gameTime);
         }
 
         [Subscribe]
@@ -109,7 +225,7 @@ namespace game
             MediaPlayer.IsRepeating = @event.isRepeating;
             MediaPlayer.Play(song);
         }
-        
+
         [Subscribe]
         private void OnMapLoad(in MapLoadEvent @event)
         {
@@ -128,14 +244,14 @@ namespace game
             CreateTriggers(map);
 
             var darknessFactor = 300;
-            if(map.Data.Properties.ContainsKey("darknessFactor"))
+            if (map.Data.Properties.ContainsKey("darknessFactor"))
                 darknessFactor = Int32.Parse(map.Data.Properties["darknessFactor"]);
             var mapRenderData = new MapRenderData() {darknessFactor = darknessFactor};
 
             if (map.Data.Properties.ContainsKey("sky"))
             {
                 var skyProperty = map.Data.Properties["sky"];
-                mapRenderData.skyType = (SkyType)Enum.Parse(typeof(SkyType), skyProperty);
+                mapRenderData.skyType = (SkyType) Enum.Parse(typeof(SkyType), skyProperty);
                 switch (skyProperty)
                 {
                     case "clouds":
@@ -148,6 +264,7 @@ namespace game
                         break;
                 }
             }
+
             mapEntity.Set(in mapRenderData);
 
             var objects = map.Data.ObjectGroups["objects"];
