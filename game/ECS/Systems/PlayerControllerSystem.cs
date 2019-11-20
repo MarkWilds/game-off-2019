@@ -17,9 +17,9 @@ namespace game.ECS.Systems
     {
         private const float MouseSpeed = 20.0f;
         private double bobTimer;
-        private int bobSpeed = 12;
-        private float bobOffset = 1.5f;
-        
+        private float bobPeriod = 12f;
+        private float bobAmplitude = 2f;
+
         private const float dragFactor = 0.1f;
 
         private readonly VirtualIntegerAxis horizontalAxis;
@@ -44,7 +44,7 @@ namespace game.ECS.Systems
             ref var physics2D = ref entity.Get<Physics2D>();
             ref var collider = ref entity.Get<IBox>();
             
-            bobTimer += time.ElapsedGameTime.TotalSeconds * bobSpeed;
+            bobTimer += time.ElapsedGameTime.TotalSeconds;
             var mouseDelta = Input.Input.MousePositionDelta;
             transform.orientation += (float)(mouseDelta.X * MouseSpeed * time.ElapsedGameTime.TotalSeconds);
 
@@ -77,9 +77,6 @@ namespace game.ECS.Systems
                 physics2D.velocity = Vector2.Zero;
             }
 
-            var speedFactor = physics2D.velocity.Length() / physics2D.maxSpeed;
-            camera.bobFactor = (float) (Math.Sin(bobTimer - Math.PI) * speedFactor * bobOffset);
-
             // do collision handling and resolve
             collider.Move(collider.X + physics2D.velocity.X, collider.Y + physics2D.velocity.Y,
                 collision =>
@@ -100,6 +97,9 @@ namespace game.ECS.Systems
 
             transform.position.X = collider.Bounds.Center.X;
             transform.position.Y = collider.Bounds.Center.Y;
+            
+            var speedFactor = physics2D.velocity.Length() / physics2D.maxSpeed;
+            camera.bobFactor = (float) (Math.Sin( bobTimer * bobPeriod ) * bobAmplitude * speedFactor);
         }
     }
 }

@@ -7,6 +7,7 @@ using game.ECS.Components;
 using game.ECS.Events;
 using game.ECS.Resource;
 using game.ECS.Systems;
+using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
@@ -59,7 +60,8 @@ namespace game
             drawSystems =  new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, Window, spriteBatch,
                 new SequentialSystem<GameTime>(
                     new SkyRendererSystem(ecsContext, spriteBatch, VirtualScreenWidth, VirtualScreenHeight), 
-                    new MapRendererSystem(VirtualScreenWidth, VirtualScreenHeight, spriteBatch, ecsContext)
+                    new MapRendererSystem(ecsContext, VirtualScreenWidth, VirtualScreenHeight, spriteBatch),
+                    new WeaponScreenRenderer(ecsContext, spriteBatch)
                     )
                 );
             
@@ -129,30 +131,14 @@ namespace game
 
             var playerOrientation = Int32.Parse(spawn.Properties["orientation"]);
 
-            Entity player = CreatePlayer(in map, (int) spawn.X, (int) spawn.Y, playerOrientation);
+            Entity player = ecsContext.CreatePlayer(in map, (int) spawn.X, (int) spawn.Y, playerOrientation);
             mapEntity.SetAsParentOf(in player);
+
+            Entity weapon = ecsContext.CreateWeapon(VirtualScreenWidth / 2 + 16, VirtualScreenHeight - 16,
+                "Sprites/blunt_weapon");
+            player.SetAsParentOf(in weapon);
         }
 
-        private Entity CreatePlayer(in Map map, int x, int y, int orientation)
-        {
-            var player = ecsContext.CreateEntity();
-            player.Set<Transform2D>();
-            player.Set(new Camera() {fov = 60.0f});
-            player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
-            
-            var collider = map.physicsWorld.Create(x, y,
-                map.Data.TileWidth / 2.0f, map.Data.TileHeight / 2.0f);
-            player.Set(collider);
-
-            // set player data
-            ref var transform = ref player.Get<Transform2D>();
-            transform.position.X = collider.Bounds.Center.X;
-            transform.position.Y = collider.Bounds.Center.Y;
-            transform.orientation = orientation;
-
-            return player;
-        }
-        
         private void CreateColliders(Map map, string collisionLayer = "collision")
         {
             var data = map.Data;

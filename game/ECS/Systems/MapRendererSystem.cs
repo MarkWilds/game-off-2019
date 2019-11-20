@@ -10,8 +10,7 @@ using TiledSharp;
 
 namespace game.ECS.Systems
 {
-    [With(typeof(Map))]
-    [With(typeof(MapRenderData))]
+    [With(typeof(Map), typeof(MapRenderData))]
     public class MapRendererSystem : AEntitySystem<GameTime>
     {
         private readonly SpriteBatch spriteBatch;
@@ -22,7 +21,7 @@ namespace game.ECS.Systems
         private readonly int screenHeight;
         private int ShadeFactor;
 
-        public MapRendererSystem(int width, int height, SpriteBatch batch, World world)
+        public MapRendererSystem(World world, int width, int height, SpriteBatch batch)
             : base(world)
         {
             cameraEntitySet = world.GetEntities()
@@ -118,7 +117,7 @@ namespace game.ECS.Systems
                     continue;
 
                 // get drawing rectangles
-                Rectangle wallRectangle = new Rectangle(column, topOfWall, 1, wallHeight);
+                Rectangle wallRectangle = new Rectangle(column, topOfWall, 1, wallHeight + 1);
                 Rectangle textureRectangle = GetSourceRectangleForTile(tileset, tile);
 
                 textureRectangle.X =
@@ -293,11 +292,11 @@ namespace game.ECS.Systems
             float rightTriangleRatio = focalLength / correctedDistance;
             int bottomOfSpriteOnScreen = (int) (rightTriangleRatio * playerHeight + projectionPlaneCenterHeight);
 
-            int spriteSize = (int) (source.Width * rightTriangleRatio);
+            int spriteScreenSize = (int) (source.Width * rightTriangleRatio);
             int spriteScreenPosition = (int) (projectionPlaneCenterWidth + focalLength * Math.Tan(angleViewSpace));
 
             // draw slices for sprite
-            int halfSprite = spriteSize / 2;
+            int halfSprite = spriteScreenSize / 2;
             int startPosition = spriteScreenPosition - halfSprite;
             int endPosition = spriteScreenPosition + halfSprite;
             int tileStart = source.X;
@@ -316,8 +315,8 @@ namespace game.ECS.Systems
             }
 
             int spriteSizeRange = endPosition - startPosition;
-            float spritePart = source.Width / (float) spriteSize;
-            float sourceOffset = noOffsetNeeded ? 0 : source.Width - spriteSizeRange / (float)spriteSize * source.Width;
+            float spritePart = source.Width / (float) spriteScreenSize;
+            float sourceOffset = noOffsetNeeded ? 0 : source.Width - spriteSizeRange / (float)spriteScreenSize * source.Width;
             
             source.Width = (int) Math.Ceiling(spritePart);
             
@@ -334,7 +333,7 @@ namespace game.ECS.Systems
                 source.X = tileStart + (int) (sourceOffset + x * spritePart);
 
                 spriteBatch.Draw(texture,
-                    new Rectangle(screenColumn, bottomOfSpriteOnScreen - spriteSize, 1, spriteSize),
+                    new Rectangle(screenColumn, bottomOfSpriteOnScreen - spriteScreenSize, 1, spriteScreenSize),
                     source, lightingTint);
             }
         }

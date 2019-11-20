@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.Xna.Framework;
 
-namespace game
+namespace game.Extensions
 {
     public static class ColorExtensions
     {
