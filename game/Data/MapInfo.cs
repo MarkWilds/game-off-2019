@@ -1,4 +1,4 @@
-﻿namespace game
+﻿namespace game.Data
 {
     public struct MapInfo
     {

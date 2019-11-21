@@ -4,6 +4,7 @@ using System.Linq;
 using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TiledSharp;
@@ -41,7 +42,7 @@ namespace game.ECS.Systems
 
         protected override void Update(GameTime state, in Entity entity)
         {
-            var camera = cameraEntitySet.GetEntities()[0];
+            var camera = cameraEntitySet.GetFirst();
 
             ref var mapData = ref entity.Get<Map>();
             ref var mapRendererData = ref entity.Get<MapRenderData>();
@@ -56,7 +57,7 @@ namespace game.ECS.Systems
                 zBuffer[i] = float.MaxValue;
 
             RenderMap(in mapData, "walls1", in cameraTransform, in cameraData);
-            RenderProps(in mapData, in cameraTransform.position, cameraTransform.orientation, in cameraData);
+            RenderTileProps(in mapData, in cameraTransform.position, cameraTransform.orientation, in cameraData);
 
             spriteBatch.End();
         }
@@ -232,7 +233,21 @@ namespace game.ECS.Systems
             }
         }
 
-        private void RenderProps(in Map map, in Vector2 position, float orientation, in Camera camera)
+        private void RenderObjectProps(in Map map, in Vector2 position, float orientation, in Camera camera)
+        {
+            TmxObjectGroup objectGroup = map.Data.ObjectGroups["objects"];
+
+            var objectList = objectGroup.Objects.Where(o => o.Type == "prop").ToList();
+            objectList.Sort((i1, i2) => 
+                (int) ((i2.X * i2.X + i2.Y * i2.Y) - (i1.X * i1.X + i1.Y * i1.Y)));
+
+            foreach (var objectProp in objectList)
+            {
+                
+            }
+        }
+
+        private void RenderTileProps(in Map map, in Vector2 position, float orientation, in Camera camera)
         {
             int cellSize = map.Data.TileWidth;
             TmxLayer propsLayer = map.Data.Layers["props"];

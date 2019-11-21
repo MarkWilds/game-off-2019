@@ -1,6 +1,7 @@
 ﻿using System;
 using DefaultEcs;
 using DefaultEcs.System;
+using game.Data;
 using game.ECS.Components;
 using game.ECS.Events;
 using game.Input.Virtual;

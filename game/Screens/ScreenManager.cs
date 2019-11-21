@@ -19,6 +19,7 @@ namespace game.Screens
 
         public SpriteBatch SpriteBatch => spriteBatch;
         public World GlobalEcsContext => globalEcsContext;
+        public Texture2D BlankTexture => blankTexture;
 
         public ScreenManager(Game game, int maxEntityCount)
             : base(game)
@@ -93,10 +94,9 @@ namespace game.Screens
                 {
                     // If this is the first active screen we came across,
                     // give it a chance to handle input.
-                    if (!otherScreenHasFocus)
+                    if(!otherScreenHasFocus)
                     {
                         screen.HandleInput();
-
                         otherScreenHasFocus = true;
                     }
 
@@ -105,12 +105,6 @@ namespace game.Screens
                     if (!screen.IsPopup)
                         coveredByOtherScreen = true;
                 }
-            }
-
-            foreach (var screen in screens)
-            {
-                if (screen.HasToBeRemoved)
-                    RemoveScreen(screen);
             }
         }
 
@@ -164,11 +158,11 @@ namespace game.Screens
         /// Helper draws a translucent black fullscreen sprite, used for fading
         /// screens in and out, and for darkening the background behind popups.
         /// </summary>
-        public void FadeBackBufferToBlack(int alpha)
+        public void FadeBackBufferToColor(int alpha, in Color col)
         {
-            spriteBatch.Begin();
+            spriteBatch.Begin(blendState: BlendState.NonPremultiplied);
 
-            Color color = Color.Black;
+            Color color = col;
             color.A = (byte) alpha;
 
             Rectangle destination = default;

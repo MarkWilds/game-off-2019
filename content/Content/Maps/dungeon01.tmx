@@ -243,7 +243,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="3" name="collision">
+ <objectgroup id="3" name="collision" visible="0">
   <object id="1" type="wall" x="128" y="192" width="32" height="64"/>
   <object id="2" type="wall" x="0" y="64" width="32" height="192"/>
   <object id="3" type="wall" x="32" y="352" width="96" height="32"/>

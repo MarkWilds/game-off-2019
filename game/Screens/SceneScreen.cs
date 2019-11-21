@@ -4,6 +4,7 @@ using System.Linq;
 using DefaultEcs;
 using DefaultEcs.Resource;
 using DefaultEcs.System;
+using game.Data;
 using game.ECS.Components;
 using game.ECS.Events;
 using game.ECS.Resource;
@@ -11,6 +12,7 @@ using game.ECS.Systems;
 using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using TiledSharp;
 
@@ -18,7 +20,7 @@ namespace game.Screens
 {
     public class SceneScreen : GameScreen
     {
-        private Entity currentMapEntity;
+        private Entity rootMapEntity;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
         private ISystem<GameTime> playerControllerSystem;
@@ -28,14 +30,14 @@ namespace game.Screens
 
         private const string MapsPathFolder = @"Content/maps";
         private const string TilesetsPathFolder = @"Content/Tilesets";
-        private const string StartingMapName = @"hub";
-        private const string StartingSpawnName = @"spawn01";
 
         private Dictionary<string, Song> songList;
+        private MapInfo rootMapInfo;
 
-        public SceneScreen()
+        public SceneScreen(string startMap, string startSpawn)
         {
             songList = new Dictionary<string, Song>();
+            rootMapInfo = new MapInfo() {mapName = startMap, spawnName = startSpawn};
         }
         
         public override void LoadContent()
@@ -52,24 +54,20 @@ namespace game.Screens
             
             drawSystems = new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, ScreenManager.Game.Window, spriteBatch,
                 new SequentialSystem<GameTime>(
-                    new SkyRendererSystem(ecsContext, spriteBatch, VirtualScreenWidth, VirtualScreenHeight),
+                    new SkyRendererSystem(ecsContext, spriteBatch, ScreenManager.BlankTexture, 
+                        VirtualScreenWidth, VirtualScreenHeight),
                     new MapRendererSystem(ecsContext, VirtualScreenWidth, VirtualScreenHeight, spriteBatch),
                     new WeaponScreenRenderer(ecsContext, spriteBatch)
                 )
             );
 
             // load resources
-            songList.Add("Music/hub", content.Load<Song>("Music/hub"));
-            songList.Add("Music/dungeon01", content.Load<Song>("Music/dungeon01"));
-            songList.Add("Music/whackmole", content.Load<Song>("Music/whackmole"));
-
             new TmxMapResourceManager(ecsContext, ScreenManager.GraphicsDevice, TilesetsPathFolder,
                 MapsPathFolder).Manage(ecsContext);
             new Texture2DResourceManager(content).Manage(ecsContext);
 
             // start loading map
-            var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = StartingSpawnName};
-            ScreenManager.Publish(new MapLoadEvent() {mapInfo = mapInfo});
+            ScreenManager.Publish(new MapLoadEvent() {mapInfo = rootMapInfo});
         }
 
         public override void Draw(GameTime gameTime)
@@ -77,33 +75,34 @@ namespace game.Screens
             drawSystems.Update(gameTime);
         }
 
+        public override void HandleInput()
+        {
+            if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Escape))
+            {
+                ScreenManager.Publish(new PlaySound(){soundName = "Sfx/Enter"});
+                ScreenManager.AddScreen(new PauseScreen());
+            }
+        }
+
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
-            updateSystems.Update(gameTime);
+            if (IsActive)
+            {
+                ScreenManager.Game.IsMouseVisible = false;
+                updateSystems.Update(gameTime);
+            }
+            else
+                ScreenManager.Game.IsMouseVisible = true;
             
-            base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
-        }
-
-        [Subscribe]
-        private void OnStopSong(in StopSongEvent @event)
-        {
-            MediaPlayer.Stop();
-        }
-
-        [Subscribe]
-        private void OnPlaySong(in PlaySongEvent @event)
-        {
-            var song = songList[@event.songName];
-            MediaPlayer.IsRepeating = @event.isRepeating;
-            MediaPlayer.Play(song);
+            base.Update(gameTime, otherScreenHasFocus, false);
         }
 
         [Subscribe]
         private void OnMapLoad(in MapLoadEvent @event)
         {
-            currentMapEntity.Dispose();
-            currentMapEntity = ScreenManager.GlobalEcsContext.CreateEntity();
-            currentMapEntity.Set(new ManagedResource<MapInfo, DisposableDummy<TmxMap>>(@event.mapInfo));
+            rootMapEntity.Dispose();
+            rootMapEntity = ScreenManager.GlobalEcsContext.CreateEntity();
+            rootMapEntity.Set(new ManagedResource<MapInfo, DisposableDummy<TmxMap>>(@event.mapInfo));
         }
 
         [Subscribe]
@@ -112,9 +111,6 @@ namespace game.Screens
             var ecsContext = ScreenManager.GlobalEcsContext;
             var mapEntity = @event.entity;
             var map = mapEntity.Get<Map>();
-
-            CreateColliders(map);
-            CreateTriggers(map);
 
             var darknessFactor = 300;
             if (map.Data.Properties.ContainsKey("darknessFactor"))
@@ -129,7 +125,8 @@ namespace game.Screens
                 {
                     case "clouds":
                         mapEntity.Set<Texture2DResources>();
-                        mapEntity.Set(new ManagedResource<string[], DisposableDummy<Texture2D>>(new []{@"Sprites/sky", @"Sprites/clouds"}));
+                        mapEntity.Set(new ManagedResource<string[], DisposableDummy<Texture2D>>(
+                            new []{@"Sprites/sky", @"Sprites/clouds"}));
                         break;
                     case "solid":
                         var skyColor = map.Data.Properties["skyColor"];
@@ -166,41 +163,6 @@ namespace game.Screens
             else
             {
                 ecsContext.Publish(new StopSongEvent());
-            }
-        }
-
-        private void CreateColliders(Map map, string collisionLayer = "collision")
-        {
-            var data = map.Data;
-            TmxObjectGroup objects = data.ObjectGroups[collisionLayer];
-
-            foreach (var tmxObject in objects.Objects)
-            {
-                map.physicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
-                    (float)tmxObject.Width, (float)tmxObject.Height);
-            }
-        }
-
-        private void CreateTriggers(Map map)
-        {
-            var data = map.Data;
-            TmxObjectGroup objects = data.ObjectGroups["objects"];
-            
-            foreach (var tmxObject in objects.Objects
-                .Where(o => o.Type == "trigger"))
-            {
-                var box = map.physicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
-                    (float)tmxObject.Width, (float)tmxObject.Height);
-                
-                var triggerType = tmxObject.Properties["type"];
-
-                if (triggerType == "teleport")
-                {
-                    var teleportToMap = tmxObject.Properties["map"];
-                    var toSpawn = tmxObject.Properties["spawn"];
-
-                    box.Data = new TriggerInfo(){type = triggerType, data = new { map = teleportToMap, spawn = toSpawn}};
-                }
             }
         }
     }

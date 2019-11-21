@@ -35,7 +35,7 @@ namespace game.Extensions
             player.Set(new Camera() {fov = 60.0f, pitch = 0, bobPeriod = 12f, bobAmplitude = 2f});
             player.Set(new Physics2D() {maxSpeed = 2, accelerationSpeed = 24});
             
-            var collider = map.physicsWorld.Create(x, y,
+            var collider = map.PhysicsWorld.Create(x, y,
                 map.Data.TileWidth / 1.5f, map.Data.TileHeight / 1.5f);
             player.Set(collider);
 

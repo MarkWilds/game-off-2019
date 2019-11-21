@@ -1,6 +1,7 @@
 ﻿using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -24,7 +25,7 @@ namespace game.ECS.Systems
         private const int CloudDirection = -1;
         private const int CloudSpeedMultiplier = 2;
 
-        public SkyRendererSystem(World world, SpriteBatch spriteBatch, int width, int height) : base(world)
+        public SkyRendererSystem(World world, SpriteBatch spriteBatch, Texture2D blank, int width, int height) : base(world)
         {
             this.spriteBatch = spriteBatch;
             cameraEntitySet = world.GetEntities()
@@ -34,9 +35,8 @@ namespace game.ECS.Systems
 
             skySource = new Rectangle();
             cloudsSource = new Rectangle();
-            
-            blankTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-            blankTexture.SetData(new []{Color.White}, 0, 1);
+
+            blankTexture = blank;
 
             startHeight = height / 2;
             destination = new Rectangle(0, 0, width, startHeight);
@@ -76,7 +76,7 @@ namespace game.ECS.Systems
             var sky = texture2DDictionary.textures["Sprites/sky"];
             var clouds = texture2DDictionary.textures["Sprites/clouds"];
 
-            var camera = cameraEntitySet.GetEntities()[0];
+            var camera = cameraEntitySet.GetFirst();
             ref var transform = ref camera.Get<Transform2D>();
             ref var cameraData = ref camera.Get<Camera>();
 

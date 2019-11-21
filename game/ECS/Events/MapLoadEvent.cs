@@ -1,4 +1,6 @@
-﻿namespace game.ECS.Events
+﻿using game.Data;
+
+namespace game.ECS.Events
 {
     public struct MapLoadEvent
     {

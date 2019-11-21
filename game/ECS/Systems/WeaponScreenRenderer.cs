@@ -1,6 +1,7 @@
 ﻿using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
+using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -28,7 +29,7 @@ namespace game.ECS.Systems
 
         protected override void Update(GameTime state, in Entity entity)
         {
-            var camera = cameraEntitySet.GetEntities()[0];
+            var camera = cameraEntitySet.GetFirst();
             ref var cameraData = ref camera.Get<Camera>();
             
             ref var transform = ref entity.Get<Transform2D>();

@@ -20,7 +20,6 @@ namespace game.Screens
         
         private bool isPopup;
         private bool isExiting;
-        private bool hasToBeRemoved;
         private bool otherScreenHasFocus;
         private float transitionPosition = 1;
 
@@ -61,8 +60,6 @@ namespace game.Screens
             protected internal set => isExiting = value;
         }
 
-        public bool HasToBeRemoved => hasToBeRemoved;
-
         public ScreenState ScreenState
         {
             get => screenState;
@@ -77,10 +74,7 @@ namespace game.Screens
         
         public virtual void LoadContent() { }
         public virtual void UnloadContent() { }
-        public virtual bool HandleInput()
-        {
-            return false;
-        }
+        public virtual void HandleInput() { }
 
         public abstract void Draw(GameTime gameTime);
 
@@ -143,7 +137,7 @@ namespace game.Screens
         public void ExitScreen()
         {
             if (TransitionOffTime == TimeSpan.Zero)
-                hasToBeRemoved = true;
+                ScreenManager.RemoveScreen(this);
             else
                 isExiting = true;
         }
