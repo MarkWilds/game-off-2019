@@ -18,7 +18,6 @@ namespace game.Screens
 {
     public class SceneScreen : GameScreen
     {
-        private World ecsContext;
         private Entity currentMapEntity;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
@@ -43,8 +42,9 @@ namespace game.Screens
         {
             var content = ScreenManager.Game.Content;
             var spriteBatch = ScreenManager.SpriteBatch;
+
+            var ecsContext = ScreenManager.GlobalEcsContext;
             
-            ecsContext = new World(1 << 8);
             ecsContext.Subscribe(this);
 
             playerControllerSystem = new PlayerControllerSystem(ecsContext);
@@ -69,7 +69,7 @@ namespace game.Screens
 
             // start loading map
             var mapInfo = new MapInfo() {mapName = StartingMapName, spawnName = StartingSpawnName};
-            ecsContext.Publish(new MapLoadEvent() {mapInfo = mapInfo});
+            ScreenManager.Publish(new MapLoadEvent() {mapInfo = mapInfo});
         }
 
         public override void Draw(GameTime gameTime)
@@ -102,13 +102,14 @@ namespace game.Screens
         private void OnMapLoad(in MapLoadEvent @event)
         {
             currentMapEntity.Dispose();
-            currentMapEntity = ecsContext.CreateEntity();
+            currentMapEntity = ScreenManager.GlobalEcsContext.CreateEntity();
             currentMapEntity.Set(new ManagedResource<MapInfo, DisposableDummy<TmxMap>>(@event.mapInfo));
         }
 
         [Subscribe]
         private void OnMapLoaded(in MapLoadedEvent @event)
         {
+            var ecsContext = ScreenManager.GlobalEcsContext;
             var mapEntity = @event.entity;
             var map = mapEntity.Get<Map>();
 

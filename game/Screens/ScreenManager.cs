@@ -1,25 +1,41 @@
+using System;
 using System.Collections.Generic;
+using DefaultEcs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace game.Screens
 {
-    public class ScreenManager : DrawableGameComponent
+    public class ScreenManager : DrawableGameComponent, IPublisher
     {
         private readonly List<GameScreen> screens;
         private readonly List<GameScreen> screensToUpdate;
+
+        private readonly World globalEcsContext;
 
         private bool isInitialized;
         private SpriteBatch spriteBatch;
         private Texture2D blankTexture;
 
         public SpriteBatch SpriteBatch => spriteBatch;
+        public World GlobalEcsContext => globalEcsContext;
 
-        public ScreenManager(Game game)
+        public ScreenManager(Game game, int maxEntityCount)
             : base(game)
         {
             screens = new List<GameScreen>();
             screensToUpdate = new List<GameScreen>();
+            globalEcsContext = new World(maxEntityCount);
+        }
+        
+        public IDisposable Subscribe<T>(ActionIn<T> action)
+        {
+            return globalEcsContext.Subscribe<T>(action);
+        }
+
+        public void Publish<T>(in T message)
+        {
+            globalEcsContext.Publish(in message);
         }
 
         public override void Initialize()

@@ -21,7 +21,7 @@ namespace game
             Content.RootDirectory = "Content";
             Window.Title = "Whack a Monster!!!";
             
-            var screenManager = new ScreenManager(this);
+            var screenManager = new ScreenManager(this, 1 << 8);
             Components.Add(screenManager);
             
             screenManager.AddScreen( new SceneScreen());
