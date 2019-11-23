@@ -37,6 +37,7 @@ namespace game.Extensions
             
             var collider = map.PhysicsWorld.Create(x, y,
                 map.Data.TileWidth / 1.5f, map.Data.TileHeight / 1.5f);
+            collider.AddTags(CollisionTag.Player);
             player.Set(collider);
 
             // set player data

@@ -239,7 +239,7 @@
    <properties>
     <property name="map" value="hub"/>
     <property name="spawn" value="spawn02"/>
-    <property name="type" value="teleport"/>
+    <property name="type" value="changeMap"/>
    </properties>
   </object>
  </objectgroup>

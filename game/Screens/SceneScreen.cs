@@ -23,7 +23,6 @@ namespace game.Screens
         private Entity rootMapEntity;
         private ISystem<GameTime> updateSystems;
         private ISystem<GameTime> drawSystems;
-        private ISystem<GameTime> playerControllerSystem;
 
         private const int VirtualScreenWidth = 320;
         private const int VirtualScreenHeight = 180;
@@ -48,9 +47,10 @@ namespace game.Screens
             var ecsContext = ScreenManager.GlobalEcsContext;
             
             ecsContext.Subscribe(this);
-
-            playerControllerSystem = new PlayerControllerSystem(ecsContext);
-            updateSystems = playerControllerSystem;
+            
+            updateSystems = new SequentialSystem<GameTime>(
+                new PlayerControllerSystem(ecsContext), 
+                new TriggerResolveSystem(ecsContext));
             
             drawSystems = new RenderTargetRenderer(VirtualScreenWidth, VirtualScreenHeight, ScreenManager.Game.Window, spriteBatch,
                 new SequentialSystem<GameTime>(

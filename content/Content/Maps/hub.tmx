@@ -114,7 +114,7 @@
    <properties>
     <property name="map" value="dungeon01"/>
     <property name="spawn" value="spawn01"/>
-    <property name="type" value="teleport"/>
+    <property name="type" value="changeMap"/>
    </properties>
   </object>
   <object id="43" name="colossuem" type="prop" x="672" y="288">

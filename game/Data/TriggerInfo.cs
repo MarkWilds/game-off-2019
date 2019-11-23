@@ -2,7 +2,7 @@
 {
     public class TriggerInfo
     {
-        public string type;
+        public TriggerType type;
         public dynamic data;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DefaultEcs;
@@ -58,21 +59,22 @@ namespace game.ECS.Resource
                 }
             }
             
-            CreateColliders(map);
+            CreateStatics(map);
             CreateTriggers(map);
             
             ecsContext.Publish(new MapLoadedEvent(){entity = entity, startingSpawn = info.spawnName});
         }
         
-        private void CreateColliders(Map map, string collisionLayer = "collision")
+        private void CreateStatics(Map map, string collisionLayer = "collision")
         {
             var data = map.Data;
             TmxObjectGroup objects = data.ObjectGroups[collisionLayer];
 
             foreach (var tmxObject in objects.Objects)
             {
-                map.PhysicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
+                var box = map.PhysicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
                     (float)tmxObject.Width, (float)tmxObject.Height);
+                box.AddTags(CollisionTag.Static);
             }
         }
 
@@ -86,17 +88,22 @@ namespace game.ECS.Resource
             {
                 var box = map.PhysicsWorld.Create((float)tmxObject.X, (float)tmxObject.Y,
                     (float)tmxObject.Width, (float)tmxObject.Height);
-                
-                var triggerType = tmxObject.Properties["type"];
 
-                if (triggerType == "teleport")
-                {
-                    var teleportToMap = tmxObject.Properties["map"];
-                    var toSpawn = tmxObject.Properties["spawn"];
-
-                    box.Data = new TriggerInfo(){type = triggerType, data = new { map = teleportToMap, spawn = toSpawn}};
-                }
+                box.AddTags(CollisionTag.Trigger);
+                TriggerType triggerType = Enum.Parse<TriggerType>(tmxObject.Properties["type"], true);
+                box.Data = CreateTriggerInfo(triggerType, tmxObject.Properties);
             }
+        }
+
+        private TriggerInfo CreateTriggerInfo(TriggerType type, PropertyDict dict)
+        {
+            switch (type)
+            {
+                case TriggerType.ChangeMap:
+                    return new TriggerInfo(){type = type, data = new { map = dict["map"], spawn = dict["spawn"]}};
+            }
+
+            return null;
         }
     }
 }
