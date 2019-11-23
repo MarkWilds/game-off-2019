@@ -75,26 +75,18 @@ namespace game.Screens
             drawSystems.Update(gameTime);
         }
 
-        public override void HandleInput()
-        {
-            if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Escape))
-            {
-                ScreenManager.Publish(new PlaySound(){soundName = "Sfx/Enter"});
-                ScreenManager.AddScreen(new PauseScreen());
-            }
-        }
-
-        public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
+        public override void Update(GameTime gameTime)
         {
             if (IsActive)
             {
-                ScreenManager.Game.IsMouseVisible = false;
+                if (Input.Input.IsKeyPressed(Keys.Escape))
+                {
+                    ScreenManager.Publish(new PlaySound(){soundName = "Sfx/Enter"});
+                    ScreenManager.AddScreen(new PauseScreen());
+                }
+                
                 updateSystems.Update(gameTime);
             }
-            else
-                ScreenManager.Game.IsMouseVisible = true;
-            
-            base.Update(gameTime, otherScreenHasFocus, false);
         }
 
         [Subscribe]

@@ -20,8 +20,9 @@ namespace game.Screens
         
         private bool isPopup;
         private bool isExiting;
-        private bool otherScreenHasFocus;
         private float transitionPosition = 1;
+        protected bool otherScreenHasFocus;
+        protected bool coveredByOtherScreen;
 
         public TimeSpan TransitionOnTime
         {
@@ -74,14 +75,14 @@ namespace game.Screens
         
         public virtual void LoadContent() { }
         public virtual void UnloadContent() { }
-        public virtual void HandleInput() { }
-
+        public abstract void Update(GameTime gameTime);
         public abstract void Draw(GameTime gameTime);
 
-        public virtual void Update(GameTime gameTime, bool otherScreenHasFocus,
-            bool coveredByOtherScreen)
+        public void UpdateScreen(GameTime gameTime, bool screenHasFocus,
+            bool screenIsCovered)
         {
-            this.otherScreenHasFocus = otherScreenHasFocus;
+            otherScreenHasFocus = screenHasFocus;
+            coveredByOtherScreen = screenIsCovered;
 
             if (isExiting)
             {
@@ -106,6 +107,8 @@ namespace game.Screens
                 screenState = UpdateTransition(gameTime, transitionOnTime, -1) ? ScreenState.TransitionOn 
                     : ScreenState.Active;
             }
+
+            Update(gameTime);
         }
         
         private bool UpdateTransition(GameTime gameTime, TimeSpan time, int direction)

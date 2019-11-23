@@ -87,18 +87,13 @@ namespace game.Screens
                 screensToUpdate.RemoveAt(screensToUpdate.Count - 1);
 
                 // Update the screen.
-                screen.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
+                screen.UpdateScreen(gameTime, otherScreenHasFocus, coveredByOtherScreen);
 
                 if (screen.ScreenState == ScreenState.TransitionOn ||
                     screen.ScreenState == ScreenState.Active)
                 {
-                    // If this is the first active screen we came across,
-                    // give it a chance to handle input.
                     if(!otherScreenHasFocus)
-                    {
-                        screen.HandleInput();
                         otherScreenHasFocus = true;
-                    }
 
                     // If this is an active non-popup, inform any subsequent
                     // screens that they are covered by it.

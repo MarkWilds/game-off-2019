@@ -1,5 +1,4 @@
 ﻿using System;
-using game.ECS.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,25 +8,30 @@ namespace game.Screens
     {
         public EntryScreen()
         {
-            TransitionOnTime = TimeSpan.FromSeconds(1);
-            TransitionOffTime = TimeSpan.FromSeconds(1);
+            IsPopup = true;
+            TransitionOnTime = TimeSpan.FromSeconds(0);
+            TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
 
-        public override void HandleInput()
+        public override void Update(GameTime gameTime)
         {
-            if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Space))
+            if (IsActive)
             {
-                ExitScreen();
+                if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Space))
+                {
+                    ExitScreen();
+                }
+                ScreenManager.Game.IsMouseVisible = true;
+            }
+            else
+            {
+                ScreenManager.Game.IsMouseVisible = false;
             }
         }
 
         public override void Draw(GameTime gameTime)
         {
-            if (ScreenState == ScreenState.TransitionOn || ScreenState == ScreenState.Active)
-                ScreenManager.FadeBackBufferToColor((int)(200 + TransitionPosition * 55), Color.White);
-            
-            if(ScreenState == ScreenState.TransitionOff)
-                ScreenManager.FadeBackBufferToColor((int)(200 - TransitionPosition * 200), Color.White);
+            ScreenManager.FadeBackBufferToColor(TransitionAlpha * 2/3, Color.Black);
         }
     }
 }

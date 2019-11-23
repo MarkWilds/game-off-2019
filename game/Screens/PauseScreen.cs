@@ -14,22 +14,26 @@ namespace game.Screens
             TransitionOffTime = TimeSpan.FromSeconds(0.3);
         }
 
-        public override void HandleInput()
+        public override void Update(GameTime gameTime)
         {
-            if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Escape))
+            if (IsActive)
             {
-                ScreenManager.Publish(new PlaySound(){soundName = "Sfx/Close"});
-                ExitScreen();
+                if (!IsTransitioning && Input.Input.IsKeyPressed(Keys.Escape))
+                {
+                    ScreenManager.Publish(new PlaySound(){soundName = "Sfx/Close"});
+                    ExitScreen();
+                }
+                ScreenManager.Game.IsMouseVisible = true;
+            }
+            else
+            {
+                ScreenManager.Game.IsMouseVisible = false;
             }
         }
 
         public override void Draw(GameTime gameTime)
         {
-            if (ScreenState == ScreenState.TransitionOn || ScreenState == ScreenState.Active)
-                ScreenManager.FadeBackBufferToColor((int)((1 - TransitionPosition) * 150), Color.Black);
-            
-            if(ScreenState == ScreenState.TransitionOff)
-                ScreenManager.FadeBackBufferToColor((int)(150 - TransitionPosition * 150), Color.Black);
+            ScreenManager.FadeBackBufferToColor(TransitionAlpha * 2/3, Color.Black);
         }
     }
 }
