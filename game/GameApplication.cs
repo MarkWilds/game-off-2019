@@ -41,7 +41,7 @@ namespace game
         protected override void Initialize()
         {
             base.Initialize();
-            Window.Title = "Whack a ...!!!";
+            Window.Title = "Whack a monster!!!";
         }
 
         protected override void Update(GameTime gameTime)
