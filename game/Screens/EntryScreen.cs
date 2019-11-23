@@ -10,9 +10,11 @@ namespace game.Screens
     {
         private const string SubTitleText = "a monster!!!";
         private const string StartGameText = "Press the spacebar to start!";
+        private const string CreditsText = "Github/Twitter: MarkWilds";
         
         private Texture2D titleTexture;
         private SpriteFont titleFont;
+        private SpriteFont creditsFont;
         
         private Vector2 startPosition = Vector2.One;
         private Vector2 endPosition = Vector2.One;
@@ -23,6 +25,7 @@ namespace game.Screens
         private Vector2 subTitlePosition = Vector2.One;
         
         private Vector2 startGameTextPos = Vector2.One;
+        private Vector2 creditsTextPos = Vector2.One;
 
         private double normalizedSin;
         
@@ -39,11 +42,12 @@ namespace game.Screens
             
             titleTexture = ScreenManager.Game.Content.Load<Texture2D>("Sprites/title");
             titleFont = ScreenManager.Game.Content.Load<SpriteFont>("Fonts/segoe");
+            creditsFont = ScreenManager.Game.Content.Load<SpriteFont>("Fonts/segoe_small");
             
             titleDestination.Width = (int) (titleTexture.Width / viewport.AspectRatio);
             titleDestination.Height = (int) (titleTexture.Height / viewport.AspectRatio);
             
-            startPosition.X = viewport.Width - titleDestination.Width;
+            startPosition.X = viewport.Width / 2 - titleDestination.Width / 2;
             startPosition.Y = -titleDestination.Height;
 
             endPosition.X = startPosition.X;
@@ -58,6 +62,10 @@ namespace game.Screens
             var startGameTextDimensions = titleFont.MeasureString(StartGameText);
             startGameTextPos.X = (float) (viewport.Width / 2.0 - startGameTextDimensions.X / 2);
             startGameTextPos.Y = viewport.Height - (startGameTextDimensions.Y + 64 / viewport.AspectRatio);
+
+            var creditsTextDimensions = creditsFont.MeasureString(CreditsText);
+            creditsTextPos.X = viewport.Width - creditsTextDimensions.X - 16 / viewport.AspectRatio;
+            creditsTextPos.Y = viewport.Height - creditsTextDimensions.Y - 16 / viewport.AspectRatio;
         }
 
         public override void UnloadContent()
@@ -113,6 +121,8 @@ namespace game.Screens
             drawColor = Color.Yellow;
             drawColor.A = (byte) (TransitionAlpha * normalizedSin);
             sb.DrawString(titleFont, StartGameText, startGameTextPos, drawColor);
+            
+            sb.DrawString(creditsFont, CreditsText, creditsTextPos, Color.White);
 
             sb.End();
         }

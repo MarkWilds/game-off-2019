@@ -20,6 +20,13 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/segoe.spritefont
 
+#begin Fonts/segoe_small.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/segoe_small.spritefont
+
 #begin Music/dungeon01.ogg
 /importer:OggImporter
 /processor:SongProcessor
