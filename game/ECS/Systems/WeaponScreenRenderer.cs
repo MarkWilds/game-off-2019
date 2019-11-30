@@ -1,7 +1,7 @@
 ﻿using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
-using game.Extensions;
+using game.StateMachine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,15 +11,10 @@ namespace game.ECS.Systems
     public class WeaponScreenRenderer : AEntitySystem<GameTime>
     {
         private readonly SpriteBatch spriteBatch;
-        private readonly EntitySet cameraEntitySet;
 
         public WeaponScreenRenderer(World world, SpriteBatch spriteBatch) : base(world)
         {
             this.spriteBatch = spriteBatch;
-            cameraEntitySet = world.GetEntities()
-                .With(typeof(Transform2D))
-                .With(typeof(Camera))
-                .Build();
         }
 
         protected override void PreUpdate(GameTime state)
@@ -29,20 +24,14 @@ namespace game.ECS.Systems
 
         protected override void Update(GameTime state, in Entity entity)
         {
-            var camera = cameraEntitySet.GetFirst();
-            ref var cameraData = ref camera.Get<Camera>();
+            ref var weaponState = ref entity.Get<IState>();
+            weaponState.Update((float) state.ElapsedGameTime.TotalSeconds);
             
             ref var transform = ref entity.Get<Transform2D>();
             ref var screenWeapon = ref entity.Get<ScreenWeapon>();
-            ref var texture2DDictionary = ref entity.Get<Texture2DResources>();
-
-            var texture = texture2DDictionary.textures[screenWeapon.resourceName];
-
-            var offsetPosition = transform.position;
-            offsetPosition.X -= texture.Width / 2.0f + cameraData.bobFactor * screenWeapon.horizontalMoveFactor;
-            offsetPosition.Y -= texture.Height / 2.0f + cameraData.bobFactor * screenWeapon.verticalMoveFactor;
+            ref var textures = ref entity.Get<Texture2DResources>();
             
-            spriteBatch.Draw(texture, offsetPosition, Color.White);
+            spriteBatch.Draw(textures.textures[screenWeapon.resourceName], transform.position, Color.White);
         }
 
         protected override void PostUpdate(GameTime state)

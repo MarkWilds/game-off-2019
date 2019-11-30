@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using DefaultEcs;
 using DefaultEcs.System;
 using game.ECS.Components;
 using game.Input.Virtual;
+using game.StateMachine;
 using Humper;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
@@ -22,6 +24,8 @@ namespace game.ECS.Systems
         private readonly VirtualIntegerAxis horizontalAxis;
         private readonly VirtualIntegerAxis verticalAxis;
 
+        private readonly VirtualButton shootButton;
+
         private readonly World ecsContext;
 
         public PlayerControllerSystem(World world) : base(world)
@@ -32,6 +36,9 @@ namespace game.ECS.Systems
             
             verticalAxis = new VirtualIntegerAxis();
             verticalAxis.AddKeyboardKeys(VirtualInput.OverlapBehavior.CancelOut, Keys.S, Keys.W);
+
+            shootButton = new VirtualButton();
+            shootButton.AddMouseLeftButton();
         }
 
         protected override void Update(GameTime time, in Entity entity)
@@ -40,6 +47,14 @@ namespace game.ECS.Systems
             ref var camera = ref entity.Get<Camera>();
             ref var physics2D = ref entity.Get<Physics2D>();
             ref var collider = ref entity.Get<IBox>();
+
+            if (shootButton.IsPressed)
+            {
+                var weapon = entity.GetChildren().SingleOrDefault(e => e.Has<IState>());
+                var weaponState = weapon.Get<IState>();
+                if (weaponState.ActiveState.Identifier != "swing_attack")
+                    weaponState.ChangeState("swing_attack");
+            }
             
             bobTimer += time.ElapsedGameTime.TotalSeconds;
             var mouseDelta = Input.Input.MousePositionDelta;

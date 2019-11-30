@@ -111,11 +111,41 @@
 /processorParam:Quality=Best
 /build:Sfx/Start.wav
 
+#begin Sfx/Weapon/hit.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sfx/Weapon/hit.mp3
+
+#begin Sfx/Weapon/hit2.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sfx/Weapon/hit2.mp3
+
+#begin Sfx/Weapon/swish.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sfx/Weapon/swish.mp3
+
 #begin Sfx/Wrong.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sfx/Wrong.wav
+
+#begin Sprites/blunt_swing_attack.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/blunt_swing_attack.png
 
 #begin Sprites/blunt_weapon.png
 /importer:TextureImporter

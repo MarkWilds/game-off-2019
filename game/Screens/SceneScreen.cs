@@ -141,7 +141,7 @@ namespace game.Screens
             mapEntity.SetAsParentOf(in player);
 
             Entity weapon = ecsContext.CreateWeapon(VirtualScreenWidth / 2 + 64, VirtualScreenHeight - 16,
-                1, 2, "Sprites/blunt_weapon");
+                2, 0, "Sprites/blunt_weapon", "Sprites/blunt_swing_attack");
             player.SetAsParentOf(in weapon);
 
             if (map.Data.Properties.ContainsKey("music"))

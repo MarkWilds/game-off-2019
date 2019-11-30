@@ -7,6 +7,10 @@ namespace game.StateMachine
     /// </summary>
     public interface IState
     {
+        string Identifier { get; }
+        
+        IState ActiveState { get; }
+        
         /// <summary>
         /// Parent state, or null if this is the root level state.
         /// </summary>

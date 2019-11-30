@@ -15,6 +15,10 @@ namespace game.StateMachine
     /// </summary>
     public abstract class AbstractState : IState
     {
+        public string Identifier { get; set; }
+
+        public IState ActiveState => activeChildren.Count > 0 ? activeChildren.Peek().ActiveState : this;
+
         /// <summary>
         /// Action called when we enter the state.
         /// </summary>
@@ -118,10 +122,7 @@ namespace game.StateMachine
                 return;
             }
 
-            if (onUpdate != null)
-            {
-                onUpdate(deltaTime);
-            }
+            onUpdate?.Invoke(deltaTime);
 
             // Update conditions
             for (var i = 0; i < conditions.Count; i++)

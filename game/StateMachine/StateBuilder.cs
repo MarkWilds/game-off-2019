@@ -31,6 +31,7 @@ namespace game.StateMachine
 
             // New-up state of the prescrbed type.
             state = new T();
+            state.Identifier = nameof(T);
             parentState.AddChild(state);
         }
 
@@ -48,6 +49,7 @@ namespace game.StateMachine
 
             // New-up state of the prescrbed type.
             state = new T();
+            state.Identifier = name;
             parentState.AddChild(state, name);
         }
 

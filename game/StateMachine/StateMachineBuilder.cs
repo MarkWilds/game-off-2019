@@ -58,5 +58,11 @@
         {
             return rootState;
         }
+                
+        public State Build(string startState)
+        {
+            rootState.ChangeState(startState);
+            return rootState;
+        }
     }
 }
