@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using DefaultEcs;
 using DefaultEcs.Resource;
@@ -13,7 +12,6 @@ using game.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using TiledSharp;
 
 namespace game.Screens
@@ -29,13 +27,11 @@ namespace game.Screens
 
         private const string MapsPathFolder = @"Content/maps";
         private const string TilesetsPathFolder = @"Content/Tilesets";
-
-        private Dictionary<string, Song> songList;
+        
         private MapInfo rootMapInfo;
 
         public SceneScreen(string startMap, string startSpawn)
         {
-            songList = new Dictionary<string, Song>();
             rootMapInfo = new MapInfo() {mapName = startMap, spawnName = startSpawn};
         }
         

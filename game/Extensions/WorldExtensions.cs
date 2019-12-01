@@ -5,7 +5,6 @@ using game.Actions;
 using game.ECS.Components;
 using game.ECS.Events;
 using game.ECS.Resource;
-using game.Input.Virtual;
 using game.StateMachine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,31 +36,11 @@ namespace game.Extensions
                 .With(typeof(Transform2D))
                 .With(typeof(Camera))
                 .Build();
-
-            var idleActionWeapon = new CallbackAction<float>();
+            
             var swingActionWeapon = new CallbackAction<float>();
-            var swingAction = new SequenceAction<float>(
-                new TemporalAction(0.25f, swingActionWeapon),
+            var temporalAction = new TemporalAction(0.25f, swingActionWeapon);
+            var swingAction = new SequenceAction<float>(temporalAction,
                 new TemporalAction(0.25f));
-
-            idleActionWeapon.OnAct += f =>
-            {
-                var camera = cameraEntity.GetFirst();
-
-                ref var cameraData = ref camera.Get<Camera>();
-                ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
-                ref var texture2DDictionary = ref weapon.Get<Texture2DResources>();
-                ref var transform = ref weapon.Get<Transform2D>();
-
-                var texture = texture2DDictionary.textures[screenWeapon.resourceName];
-
-                transform.position.X = screenWeapon.initialPosition.X -
-                                       texture.Width / 2.0f + cameraData.bobFactor * screenWeapon.horizontalMoveFactor;
-                transform.position.Y = screenWeapon.initialPosition.Y -
-                                       texture.Height / 2.0f + cameraData.bobFactor * screenWeapon.verticalMoveFactor;
-
-                return true;
-            };
 
             swingActionWeapon.OnAct += t =>
             {
@@ -70,7 +49,9 @@ namespace game.Extensions
 
                 // add fast to slow tween
                 transform.position.X = Easing.Back.InOut(t) * screenWeapon.initialPosition.X;
-                transform.position.Y = screenWeapon.initialPosition.Y - Easing.Circular.Out(t) * 64;
+
+                var f = temporalAction.Reverse ? 1 - t : t;
+                transform.position.Y = screenWeapon.initialPosition.Y - Easing.Circular.Out(f) * 64;
                 
                 return true;
             };
@@ -82,14 +63,30 @@ namespace game.Extensions
                     ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
                     screenWeapon.resourceName = "Sprites/blunt_weapon";
                 })
-                .Update((state, dt) => idleActionWeapon.Act(dt))
+                .Update((state, dt) =>
+                {
+                    var camera = cameraEntity.GetFirst();
+
+                    ref var cameraData = ref camera.Get<Camera>();
+                    ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
+                    ref var texture2DDictionary = ref weapon.Get<Texture2DResources>();
+                    ref var transform = ref weapon.Get<Transform2D>();
+
+                    var texture = texture2DDictionary.textures[screenWeapon.resourceName];
+
+                    transform.position.X = screenWeapon.initialPosition.X -
+                                           texture.Width / 2.0f + cameraData.bobFactor * screenWeapon.horizontalMoveFactor;
+                    transform.position.Y = screenWeapon.initialPosition.Y -
+                                           texture.Height / 2.0f + cameraData.bobFactor * screenWeapon.verticalMoveFactor;
+                })
                 .End()
                 .State("swing_attack")
                 .Enter(s =>
                 {
                     ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
                     screenWeapon.resourceName = "Sprites/blunt_swing_attack";
-                    
+
+                    temporalAction.Reverse = !temporalAction.Reverse;
                     world.Publish(new PlaySound(){soundName = "Sfx/Weapon/swish"});
                 })
                 .Update((state, dt) =>
