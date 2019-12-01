@@ -5,6 +5,7 @@ using DefaultEcs.System;
 using game.ECS.Components;
 using game.Input.Virtual;
 using game.StateMachine;
+using game.Weapons;
 using Humper;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
@@ -52,8 +53,8 @@ namespace game.ECS.Systems
             {
                 var weapon = entity.GetChildren().SingleOrDefault(e => e.Has<IState>());
                 var weaponState = weapon.Get<IState>();
-                if (weaponState.ActiveState.Identifier != "swing_attack")
-                    weaponState.ChangeState("swing_attack");
+                if (weaponState.ActiveState.Identifier != Hammer.WeaponState.SWING.ToString())
+                    weaponState.ChangeState(Hammer.WeaponState.SWING.ToString());
             }
             
             bobTimer += time.ElapsedGameTime.TotalSeconds;

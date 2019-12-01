@@ -9,6 +9,7 @@ using game.ECS.Events;
 using game.ECS.Resource;
 using game.ECS.Systems;
 using game.Extensions;
+using game.Weapons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -137,7 +138,10 @@ namespace game.Screens
             mapEntity.SetAsParentOf(in player);
 
             Entity weapon = ecsContext.CreateWeapon(VirtualScreenWidth / 2 + 64, VirtualScreenHeight - 16,
-                2, 0, "Sprites/blunt_weapon", "Sprites/blunt_swing_attack");
+                2, 0);
+            IWeapon hammer = new Hammer();
+            hammer.Initialize(ecsContext, in weapon);
+            
             player.SetAsParentOf(in weapon);
 
             if (map.Data.Properties.ContainsKey("music"))

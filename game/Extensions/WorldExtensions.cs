@@ -1,11 +1,8 @@
-﻿using System;
-using DefaultEcs;
+﻿using DefaultEcs;
 using DefaultEcs.Resource;
-using game.Actions;
 using game.ECS.Components;
-using game.ECS.Events;
 using game.ECS.Resource;
-using game.StateMachine;
+using game.Weapons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,98 +10,6 @@ namespace game.Extensions
 {
     public static class WorldExtensions
     {
-        public static Entity CreateWeapon(this World world, int x, int y, int vMove, int hMove,
-            params string[] textures)
-        {
-            var weapon = world.CreateEntity();
-            weapon.Set<Texture2DResources>();
-            weapon.Set(new ManagedResource<string[], DisposableDummy<Texture2D>>(textures));
-            weapon.Set<Transform2D>();
-            weapon.Set(new ScreenWeapon()
-            {
-                horizontalMoveFactor = hMove,
-                verticalMoveFactor = vMove,
-                initialPosition = new Vector2(x, y)
-            });
-            weapon.Set(new Transform2D()
-            {
-               position = new Vector2(x, y)
-            });
-            
-            // use in statemachine
-            var cameraEntity = world.GetEntities()
-                .With(typeof(Transform2D))
-                .With(typeof(Camera))
-                .Build();
-            
-            var swingActionWeapon = new CallbackAction<float>();
-            var temporalAction = new TemporalAction(0.25f, swingActionWeapon);
-            var swingAction = new SequenceAction<float>(temporalAction,
-                new TemporalAction(0.25f));
-
-            swingActionWeapon.OnAct += t =>
-            {
-                ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
-                ref var transform = ref weapon.Get<Transform2D>();
-
-                // add fast to slow tween
-                transform.position.X = Easing.Back.InOut(t) * screenWeapon.initialPosition.X;
-
-                var f = temporalAction.Reverse ? 1 - t : t;
-                transform.position.Y = screenWeapon.initialPosition.Y - Easing.Circular.Out(f) * 64;
-                
-                return true;
-            };
-            
-            var weaponStateBuilder = new StateMachineBuilder();
-            var weaponState = weaponStateBuilder.State("idle")
-                .Enter(s =>
-                {
-                    ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
-                    screenWeapon.resourceName = "Sprites/blunt_weapon";
-                })
-                .Update((state, dt) =>
-                {
-                    var camera = cameraEntity.GetFirst();
-
-                    ref var cameraData = ref camera.Get<Camera>();
-                    ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
-                    ref var texture2DDictionary = ref weapon.Get<Texture2DResources>();
-                    ref var transform = ref weapon.Get<Transform2D>();
-
-                    var texture = texture2DDictionary.textures[screenWeapon.resourceName];
-
-                    transform.position.X = screenWeapon.initialPosition.X -
-                                           texture.Width / 2.0f + cameraData.bobFactor * screenWeapon.horizontalMoveFactor;
-                    transform.position.Y = screenWeapon.initialPosition.Y -
-                                           texture.Height / 2.0f + cameraData.bobFactor * screenWeapon.verticalMoveFactor;
-                })
-                .End()
-                .State("swing_attack")
-                .Enter(s =>
-                {
-                    ref var screenWeapon = ref weapon.Get<ScreenWeapon>();
-                    screenWeapon.resourceName = "Sprites/blunt_swing_attack";
-
-                    temporalAction.Reverse = !temporalAction.Reverse;
-                    world.Publish(new PlaySound(){soundName = "Sfx/Weapon/swish"});
-                })
-                .Update((state, dt) =>
-                {
-                    if (swingAction.Act(dt))
-                    {
-                        swingAction.Restart();
-                        state.Parent.ChangeState("idle");
-                    }
-                })
-                .End()
-                .Build("idle");
-
-            weapon.Set<IState>(weaponState);
-
-            return weapon;
-        }
-
         public static Entity CreatePlayer(this World world, in Map map, int x, int y, int orientation)
         {
             var player = world.CreateEntity();
@@ -124,6 +29,24 @@ namespace game.Extensions
             transform.orientation = orientation;
 
             return player;
+        }
+        
+        public static Entity CreateWeapon(this World world, int x, int y, int vMove, int hMove)
+        {
+            var weapon = world.CreateEntity();
+            weapon.Set<Transform2D>();
+            weapon.Set(new ScreenWeapon()
+            {
+                horizontalMoveFactor = hMove,
+                verticalMoveFactor = vMove,
+                initialPosition = new Vector2(x, y)
+            });
+            weapon.Set(new Transform2D()
+            {
+                position = new Vector2(x, y)
+            });
+            
+            return weapon;
         }
     }
 }
