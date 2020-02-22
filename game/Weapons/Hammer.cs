@@ -44,7 +44,7 @@ namespace game.Weapons
             cameraEntitySet = world.GetEntities()
                 .With(typeof(Transform2D))
                 .With(typeof(Camera))
-                .Build();
+                .AsSet();
 
             swingAttackAction = new CallbackAction<float>();
             swingAttackAction.OnAct += DoSwingActionUpdate;

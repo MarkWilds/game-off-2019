@@ -28,7 +28,7 @@ namespace game.ECS.Systems
             cameraEntitySet = world.GetEntities()
                 .With(typeof(Transform2D))
                 .With(typeof(Camera))
-                .Build();
+                .AsSet();
 
             spriteBatch = batch;
             screenWidth = width;
