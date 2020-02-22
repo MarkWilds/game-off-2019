@@ -1,10 +1,6 @@
 ﻿using DefaultEcs;
-using DefaultEcs.Resource;
 using game.ECS.Components;
-using game.ECS.Resource;
-using game.Weapons;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace game.Extensions
 {
